@@ -83,3 +83,15 @@ This file tracks block families detected in the user-supplied ShadcnSpace prompt
 - Avatar  5
 - Avatar  6
 - Avatar  7
+
+## Phase 3 element catalog
+
+Typography/actions: Text Link, Badge, List, Social Links.
+
+Forms: Checkbox, Radio Group, Switch, Range and File Input.
+
+Media/data: Embed/iFrame, Map Embed, Carousel and Table.
+
+Interactive: Tabs, Accordion and Modal.
+
+Components: Component Symbol container for grouping reusable UI.
