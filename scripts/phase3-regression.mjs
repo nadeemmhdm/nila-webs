@@ -9,16 +9,21 @@ const exporter = read("src/lib/exporter.ts");
 const store = read("src/store/builder.ts");
 const shortcuts = read("src/hooks/useEditorShortcuts.ts");
 
+const hasLegacySymbolSync = store.includes("syncSymbolInstances") && properties.includes("Sync instances");
+const hasComponentRegistrySync = store.includes("syncComponentFromNode") && store.includes("replaceComponentInstances") && properties.includes("Sync changes");
+const hasCarouselControls = renderer.includes("carouselAutoplay") && renderer.includes("carouselInterval") && properties.includes("CarouselEditor");
+const hasAdvancedRegistry = elements.includes('"Custom HTML"') && elements.includes('"Component Group"') && elements.includes("createPhase3Element");
+
 const checks = [
   ["advanced node types", types.includes('"html"') && types.includes("carouselAutoplay") && types.includes("symbolSyncKey")],
   ["safe html renderer", renderer.includes('case "html"') && renderer.includes('sandbox=""')],
   ["advanced form validation", renderer.includes("minLength={node.minLength}") && properties.includes("Form & validation")],
   ["accessibility controls", properties.includes("Accessibility") && renderer.includes('"aria-label": node.ariaLabel')],
-  ["synced symbols", store.includes("syncSymbolInstances") && properties.includes("Sync instances")],
-  ["carousel behavior", renderer.includes("carouselAutoplay") && properties.includes("Carousel behavior")],
+  ["synced reusable components", hasLegacySymbolSync || hasComponentRegistrySync],
+  ["carousel behavior", hasCarouselControls],
   ["export parity", exporter.includes("case 'html'") && exporter.includes("node.carouselAutoplay") && exporter.includes("node.inputType")],
   ["keyboard shortcuts", shortcuts.includes('key === "x"') && shortcuts.includes('key === "d"')],
-  ["element registry", elements.includes('"Safe HTML"') && elements.includes("symbolSyncKey")]
+  ["element registry", hasAdvancedRegistry]
 ];
 
 let failed = 0;
