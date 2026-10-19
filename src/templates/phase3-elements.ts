@@ -2,7 +2,7 @@ import type { BuilderNode, LibraryItem, NodeType } from "../types";
 import { createNode, defaultStyle, uid } from "../lib/nodes";
 
 const node = (type: NodeType, name: string, extra: Partial<BuilderNode> = {}): BuilderNode => ({
-  id: uid(type), type, name, style: { ...defaultStyle(), ...(extra.style || {}) }, animation: "none", hoverAnimation: "none",
+  id: uid(type), type, name, animation: "none", hoverAnimation: "none",
   animationDuration: .7, animationDelay: 0, responsive: {}, hiddenOn: {}, ...extra,
   style: { ...defaultStyle(), ...(extra.style || {}) }
 });
