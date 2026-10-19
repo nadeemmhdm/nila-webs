@@ -23,11 +23,11 @@ jobs:
           gzip -t /tmp/phase3-final.tar.gz
           tar -tzf /tmp/phase3-final.tar.gz
           tar -xzf /tmp/phase3-final.tar.gz
+          git checkout HEAD -- .github/workflows/
           rm -f phase3final.tar.part.* phase3final.tar.trigger
-          rm -f phase3fin.part.* phase3final.trigger .github/workflows/apply-phase3-final.yml
-          rm -f phase3.patch.gz.b64 phase3.part.* phase3.trigger .github/workflows/apply-phase3.yml
-          rm -f .github/workflows/apply-phase3-tar.yml
-      - name: Commit Phase 3 final
+          rm -f phase3fin.part.* phase3final.trigger
+          rm -f phase3.patch.gz.b64 phase3.part.* phase3.trigger
+      - name: Commit Phase 3 final source
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
