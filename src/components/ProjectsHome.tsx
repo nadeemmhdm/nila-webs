@@ -1,6 +1,7 @@
-import { ArrowRight, CalendarDays, FilePlus2, FolderOpen, LayoutTemplate, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowRight, CalendarDays, FilePlus2, FolderOpen, History, LayoutTemplate, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createProjectModel, deleteProjectFromStorage, listProjects, loadProjectById, saveProject } from "../lib/project-storage";
+import RecoveryDialog from "./RecoveryDialog";
 import { deleteAssetBlob } from "../lib/assets";
 import { siteTemplateRegistry } from "../templates/site-templates";
 import type { BuilderProject, ProjectSummary } from "../types";
@@ -9,6 +10,7 @@ export default function ProjectsHome({ onOpen }: { onOpen: (project: BuilderProj
   const [projects, setProjects] = useState<ProjectSummary[]>(() => listProjects());
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [recoveryProject, setRecoveryProject] = useState<BuilderProject | null>(null);
   const refresh = () => setProjects(listProjects());
   useEffect(() => {
     const handler = () => refresh();
@@ -33,22 +35,23 @@ export default function ProjectsHome({ onOpen }: { onOpen: (project: BuilderProj
         <button className="hero-create" onClick={() => setCreateOpen(true)}><FilePlus2 size={18}/><span><strong>New project</strong><small>Blank is selected by default</small></span><ArrowRight size={16}/></button>
       </div>
 
-      {!!recent.length && <section className="project-section"><div className="section-title"><div><span className="eyebrow">Continue building</span><h2>Recent projects</h2></div></div><div className="project-grid recent-grid">{recent.map(project => <ProjectCard key={project.id} project={project} onOpen={() => openProject(project.id)} onDelete={() => remove(project.id)}/>)}</div></section>}
+      {!!recent.length && <section className="project-section"><div className="section-title"><div><span className="eyebrow">Continue building</span><h2>Recent projects</h2></div></div><div className="project-grid recent-grid">{recent.map(project => <ProjectCard key={project.id} project={project} onOpen={() => openProject(project.id)} onDelete={() => remove(project.id)} onRecovery={() => { const full=loadProjectById(project.id); if(full) setRecoveryProject(full); }}/>)}</div></section>}
 
       <section className="project-section all-projects-section">
         <div className="section-title"><div><span className="eyebrow">Library</span><h2>All projects</h2></div><label className="projects-search"><Search size={14}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search projects…"/></label></div>
-        {!filtered.length ? <div className="projects-empty"><div className="projects-empty-icon"><LayoutTemplate size={24}/></div><h3>{projects.length ? "No matching projects" : "Create your first website"}</h3><p>{projects.length ? "Try another project name or description." : "Choose blank or a starter template and begin editing visually."}</p><button onClick={() => setCreateOpen(true)}><Plus size={14}/>Create project</button></div> : <div className="project-grid">{filtered.map(project => <ProjectCard key={project.id} project={project} onOpen={() => openProject(project.id)} onDelete={() => remove(project.id)}/>)}</div>}
+        {!filtered.length ? <div className="projects-empty"><div className="projects-empty-icon"><LayoutTemplate size={24}/></div><h3>{projects.length ? "No matching projects" : "Create your first website"}</h3><p>{projects.length ? "Try another project name or description." : "Choose blank or a starter template and begin editing visually."}</p><button onClick={() => setCreateOpen(true)}><Plus size={14}/>Create project</button></div> : <div className="project-grid">{filtered.map(project => <ProjectCard key={project.id} project={project} onOpen={() => openProject(project.id)} onDelete={() => remove(project.id)} onRecovery={() => { const full=loadProjectById(project.id); if(full) setRecoveryProject(full); }}/>)}</div>}
       </section>
     </section>
 
-    {createOpen && <CreateProjectDialog onClose={() => setCreateOpen(false)} onCreate={project => { setCreateOpen(false); refresh(); onOpen(project); }}/>} 
+    {createOpen && <CreateProjectDialog onClose={() => setCreateOpen(false)} onCreate={project => { setCreateOpen(false); refresh(); onOpen(project); }}/>}
+    {recoveryProject && <RecoveryDialog project={recoveryProject} onClose={() => setRecoveryProject(null)} onRestore={project => { refresh(); onOpen(project); }}/>} 
   </main>;
 }
 
-function ProjectCard({ project, onOpen, onDelete }: { project: ProjectSummary; onOpen: () => void; onDelete: () => void }) {
+function ProjectCard({ project, onOpen, onDelete, onRecovery }: { project: ProjectSummary; onOpen: () => void; onDelete: () => void; onRecovery: () => void }) {
   return <article className="project-card-home" onDoubleClick={onOpen}>
     <div className="project-preview-tile"><div className="preview-nav"/><div className="preview-copy"><i/><i/><i/></div><div className="preview-grid"><i/><i/><i/></div></div>
-    <div className="project-card-meta"><div className="project-card-title"><div><strong>{project.name}</strong><span>{project.description || "No description"}</span></div><div className="project-menu"><button title="Project options"><MoreHorizontal size={15}/></button><button className="delete-project" title="Delete project" onClick={e => { e.stopPropagation(); onDelete(); }}><Trash2 size={13}/></button></div></div>
+    <div className="project-card-meta"><div className="project-card-title"><div><strong>{project.name}</strong><span>{project.description || "No description"}</span></div><div className="project-menu"><button title="Recovery & backups" onClick={e=>{e.stopPropagation();onRecovery();}}><History size={15}/></button><button className="delete-project" title="Delete project" onClick={e => { e.stopPropagation(); onDelete(); }}><Trash2 size={13}/></button></div></div>
       <div className="project-stats"><span><CalendarDays size={11}/>{formatDate(project.updatedAt)}</span><span>{project.pageCount} page{project.pageCount === 1 ? "" : "s"}</span><span>{project.assetCount} assets</span></div>
       <button className="open-project-button" onClick={onOpen}><FolderOpen size={13}/>Open project<ArrowRight size={13}/></button>
     </div>

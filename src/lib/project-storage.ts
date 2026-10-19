@@ -12,6 +12,10 @@ const INDEX_KEY = "nila-webs-project-index-v1";
 const ACTIVE_KEY = "nila-webs-active-project-v1";
 const LEGACY_KEY = "nila-webs-project-v2";
 const keyFor = (id: string) => `nila-webs-project:${id}`;
+const recoveryKeyFor = (id: string) => `nila-webs-recovery:${id}`;
+const RECOVERY_LIMIT = 12;
+
+export interface ProjectRecoverySnapshot { id: string; projectId: string; createdAt: string; reason: "autosave" | "manual" | "pre-overwrite"; project: BuilderProject; }
 
 export function normalizeProject(raw: Partial<BuilderProject> & Record<string, unknown>): BuilderProject {
   const inputPages = Array.isArray(raw.pages) && raw.pages.length ? raw.pages as BuilderPage[] : [{
@@ -83,6 +87,8 @@ export function listProjects(): ProjectSummary[] {
 }
 
 export function saveProject(project: BuilderProject): BuilderProject {
+  const previous = loadProjectById(project.id);
+  if (previous) createRecoverySnapshot(previous, "pre-overwrite");
   const next = normalizeProject({ ...project, updatedAt: new Date().toISOString() });
   localStorage.setItem(keyFor(next.id), JSON.stringify(next));
   localStorage.setItem(ACTIVE_KEY, next.id);
@@ -115,6 +121,7 @@ export function loadInitialProject(): BuilderProject {
 
 export function deleteProjectFromStorage(id: string) {
   localStorage.removeItem(keyFor(id));
+  localStorage.removeItem(recoveryKeyFor(id));
   const list = readIndexRaw().filter(item => item.id !== id);
   writeIndex(list);
   if (localStorage.getItem(ACTIVE_KEY) === id) localStorage.removeItem(ACTIVE_KEY);
@@ -137,6 +144,67 @@ export function duplicateStoredProject(id: string): BuilderProject | null {
 export function importProjectToStorage(raw: BuilderProject): BuilderProject {
   const normalized = normalizeProject(raw as BuilderProject & Record<string, unknown>);
   return saveProject(normalized);
+}
+
+export function listProjectRecoverySnapshots(projectId: string): ProjectRecoverySnapshot[] {
+  try {
+    const raw = localStorage.getItem(recoveryKeyFor(projectId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(item => item && item.projectId === projectId).sort((a,b) => b.createdAt.localeCompare(a.createdAt)) : [];
+  } catch { return []; }
+}
+
+export function createRecoverySnapshot(project: BuilderProject, reason: ProjectRecoverySnapshot["reason"] = "manual"): ProjectRecoverySnapshot {
+  const snapshot: ProjectRecoverySnapshot = { id: uid("recovery"), projectId: project.id, createdAt: new Date().toISOString(), reason, project: structuredClone(project) };
+  const current = listProjectRecoverySnapshots(project.id);
+  const next = [snapshot, ...current].slice(0, RECOVERY_LIMIT);
+  localStorage.setItem(recoveryKeyFor(project.id), JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent("nila-projects-changed"));
+  return snapshot;
+}
+
+export function restoreRecoverySnapshot(projectId: string, snapshotId: string): BuilderProject | null {
+  const snapshot = listProjectRecoverySnapshots(projectId).find(item => item.id === snapshotId);
+  if (!snapshot) return null;
+  const restored = normalizeProject({ ...structuredClone(snapshot.project), updatedAt: new Date().toISOString() });
+  localStorage.setItem(keyFor(projectId), JSON.stringify(restored));
+  localStorage.setItem(ACTIVE_KEY, projectId);
+  const list = readIndexRaw();
+  const summary = projectSummary(restored);
+  const index = list.findIndex(item => item.id === projectId);
+  if (index >= 0) list[index] = summary; else list.unshift(summary);
+  writeIndex(list);
+  window.dispatchEvent(new CustomEvent("nila-projects-changed", { detail: summary }));
+  return restored;
+}
+
+export function deleteRecoverySnapshot(projectId: string, snapshotId: string) {
+  const next = listProjectRecoverySnapshots(projectId).filter(item => item.id !== snapshotId);
+  localStorage.setItem(recoveryKeyFor(projectId), JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent("nila-projects-changed"));
+}
+
+export function clearProjectRecovery(projectId: string) {
+  localStorage.removeItem(recoveryKeyFor(projectId));
+  window.dispatchEvent(new CustomEvent("nila-projects-changed"));
+}
+
+export function exportProjectBackup(project: BuilderProject) {
+  createRecoverySnapshot(project, "manual");
+  const payload = JSON.stringify({ format: "nila-webs-project-backup", version: 1, exportedAt: new Date().toISOString(), project: normalizeProject(project as BuilderProject & Record<string, unknown>) }, null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url; anchor.download = `${project.name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "nila-webs-project"}.nila.json`;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+export function parseProjectBackup(text: string): BuilderProject {
+  const raw = JSON.parse(text);
+  const project = raw?.format === "nila-webs-project-backup" ? raw.project : raw;
+  if (!project || typeof project !== "object") throw new Error("Invalid Nila Webs project backup");
+  return normalizeProject(project);
 }
 
 function migrateLegacyProject() {

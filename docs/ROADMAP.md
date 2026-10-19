@@ -21,10 +21,8 @@ Completed in v0.9.0. Adds a project Motion Studio, IntersectionObserver scroll r
 ## Phase 7 — Navigation, forms and SEO ✅
 Completed in v1.0.0. Adds the Site / Nav / SEO workspace, typed page/anchor/external/email/phone link targets, project navbar link management, element anchors, endpoint-based form integrations with validation/status/honeypot support, global and per-page SEO metadata, Open Graph, favicon/canonical controls, sitemap.xml and robots.txt generation, runtime page metadata updates, and a combined SEO/accessibility audit. Editor preview and standalone React/Vite export share navigation, anchors, forms and metadata behavior.
 
-## Phase 8 — Discoverability & security center 🟣 in progress
-v1.2.0 milestone adds real React/Vite source generation: multi-page `src/pages`, generated `src/sections`, reusable/imported component modules, theme source modules, animation runtime parity, ZIP output and direct GitHub repository publishing. The Vite bootstrap remains `index.html`, while actual website pages are React/TSX source.
-
-Milestone 1 in v1.1.0 adds unified SEO/AEO/GEO/security scoring, high-score guidance, editable robots.txt and optional llms.txt management, JSON-LD entity/page metadata, answer summaries/citations/freshness fields, sitemap last-modified support, clean BrowserRouter export URLs with hosting rewrite presets, configurable OWASP-aligned security headers, mixed-content/custom-HTML security audits, and RFC 9116 `/.well-known/security.txt` export.
+## Phase 8 — Discoverability, security & recovery center ✅
+Completed in v1.3.0. Includes the unified SEO/AEO/GEO/security quality center, 90+ score guidance, robots.txt and optional llms.txt managers, JSON-LD, sitemap freshness, security headers, RFC 9116 security.txt, clean BrowserRouter hosting presets, real React/Vite source generation, ZIP/GitHub publishing, and device-local project recovery. Nila Webs now keeps bounded pre-overwrite snapshots, supports manual recovery points, restore/delete/clear workflows, and portable `.nila.json` project backups.
 
 ## Phase 9 — Production export pipeline
 Dependency resolver, shadcn-compatible generated structure, Tailwind 4 export option, build validation, deployment presets and export diagnostics.
