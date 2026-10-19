@@ -6,6 +6,7 @@ import PropertiesPanel from "./components/PropertiesPanel";
 import SplashScreen from "./components/SplashScreen";
 import Topbar from "./components/Topbar";
 import { useBuilder } from "./store/builder";
+import { useEditorShortcuts } from "./hooks/useEditorShortcuts";
 import type { BuilderProject } from "./types";
 
 type AppScreen = "splash" | "projects" | "editor";
@@ -13,6 +14,7 @@ type AppScreen = "splash" | "projects" | "editor";
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>("splash");
   const { previewMode, leftCollapsed, rightCollapsed, loadProject, setPreviewMode, setLivePreview } = useBuilder();
+  useEditorShortcuts(screen === "editor" && !previewMode);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setScreen("projects"), 850);
