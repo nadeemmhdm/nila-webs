@@ -27,6 +27,15 @@ jobs:
           echo "fab729930ef4e939730bbe4a2e36acfc99d0998ac225f222865c2d642c3918ef  /tmp/p4final.tar.gz" | sha256sum -c -
           gzip -t /tmp/p4final.tar.gz
           tar -xzf /tmp/p4final.tar.gz
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/lib/prompt-adapter.ts')
+          s = p.read_text()
+          old = '.map(mediaNode)'
+          new = '.map((url, index) => mediaNode(url, index))'
+          assert old in s, 'media mapper pattern missing'
+          p.write_text(s.replace(old, new, 1))
+          PY
           git checkout -- .github/workflows/web-build.yml
           rm -f p4finalsrc.part.* phase4complete.trigger
       - name: Install dependencies
