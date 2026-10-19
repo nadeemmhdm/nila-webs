@@ -23,3 +23,5 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build editor
         run: npm run build
+      - name: Phase 3 regression gate
+        run: npm run check:phase3
