@@ -2,6 +2,7 @@ import { Blocks, Box, LayoutTemplate, Search, Sparkles, WandSparkles } from "luc
 import { useMemo, useState } from "react";
 import { useBuilder } from "../store/builder";
 import { elementLibrary, sectionLibrary, siteTemplateLibrary } from "../templates/library";
+import { phase3ElementLibrary } from "../templates/phase3-elements";
 import type { LibraryItem } from "../types";
 
 type Tab = "elements" | "sections" | "templates";
@@ -10,7 +11,7 @@ export default function LibraryPanel() {
   const [tab, setTab] = useState<Tab>("sections");
   const [query, setQuery] = useState("");
   const { addNode, replaceCurrentPageNodes } = useBuilder();
-  const source = tab === "elements" ? elementLibrary : tab === "sections" ? sectionLibrary : siteTemplateLibrary;
+  const source = tab === "elements" ? [...elementLibrary, ...phase3ElementLibrary] : tab === "sections" ? sectionLibrary : siteTemplateLibrary;
   const items = useMemo(() => source.filter(item => `${item.name} ${item.group || ""} ${item.description || ""}`.toLowerCase().includes(query.toLowerCase())), [source, query]);
   const grouped = useMemo(() => Object.entries(items.reduce<Record<string, LibraryItem[]>>((acc, item) => { const key = item.group || "Other"; (acc[key] ||= []).push(item); return acc; }, {})), [items]);
 

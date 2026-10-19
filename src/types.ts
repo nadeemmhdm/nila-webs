@@ -3,8 +3,9 @@ export type Viewport = "desktop" | "tablet" | "mobile";
 export type NodeType =
   | "section" | "container" | "card" | "form"
   | "heading" | "text" | "button" | "image" | "video" | "icon"
-  | "input" | "textarea" | "select" | "label" | "spacer" | "divider"
-  | "navbar" | "footer";
+  | "input" | "textarea" | "select" | "label" | "checkbox" | "radio" | "switch" | "range" | "file"
+  | "link" | "badge" | "list" | "embed" | "map" | "table" | "tabs" | "accordion" | "modal" | "carousel" | "socials" | "symbol"
+  | "spacer" | "divider" | "navbar" | "footer";
 
 export type AnimationName =
   | "none" | "fade-up" | "fade-in" | "slide-left" | "slide-right"
@@ -46,6 +47,28 @@ export interface NodeResponsiveStyle {
   mobile?: Partial<NodeStyle>;
 }
 
+
+export interface InteractiveItem {
+  title: string;
+  body: string;
+}
+
+export interface TableModel {
+  headers: string[];
+  rows: string[][];
+}
+
+export interface CarouselSlide {
+  src: string;
+  alt?: string;
+  caption?: string;
+}
+
+export interface SocialLink {
+  label: string;
+  href: string;
+}
+
 export interface BuilderNode {
   id: string;
   type: NodeType;
@@ -57,6 +80,18 @@ export interface BuilderNode {
   target?: "_self" | "_blank";
   placeholder?: string;
   options?: string[];
+  checked?: boolean;
+  required?: boolean;
+  value?: string;
+  nameAttr?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  items?: InteractiveItem[];
+  table?: TableModel;
+  slides?: CarouselSlide[];
+  links?: SocialLink[];
+  componentName?: string;
   animation?: AnimationName;
   hoverAnimation?: HoverAnimation;
   animationDuration?: number;

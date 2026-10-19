@@ -21,12 +21,21 @@ export default function PropertiesPanel() {
     <div className="property-header"><div><span className="panel-kicker">{viewport} properties</span><h2>{node.name}</h2><span className="node-type-chip">{node.type}</span></div><div className="property-actions"><button onClick={() => setNodeHidden(node.id, viewport, !node.hiddenOn?.[viewport])} title="Toggle visibility">{node.hiddenOn?.[viewport] ? <EyeOff size={14}/> : <Eye size={14}/>}</button>{!global && <><button onClick={() => copyNode(node.id)} title="Copy"><ClipboardCopy size={14}/></button><button onClick={() => duplicateNode(node.id)} title="Duplicate"><Copy size={14}/></button><button className="danger" onClick={() => deleteNode(node.id)} title="Delete"><Trash2 size={14}/></button></>}</div></div>
 
     <PropertySection title="Content">
-      {["heading","text","button","label","icon"].includes(node.type) && <Field label="Text"><textarea value={node.content || ""} onChange={e => set("content", e.target.value)}/></Field>}
+      {["heading","text","button","link","badge","label","icon","checkbox","radio","switch","range","file","modal"].includes(node.type) && <Field label={node.type === "radio" ? "Legend" : node.type === "modal" ? "Trigger text" : "Text"}><textarea value={node.content || ""} onChange={e => set("content", e.target.value)}/></Field>}
       {["image","video"].includes(node.type) && <MediaSourceEditor node={node}/>}
       {node.type === "image" && <Field label="Alt text"><input value={node.alt || ""} onChange={e => set("alt", e.target.value)}/></Field>}
       {["input","textarea"].includes(node.type) && <Field label="Placeholder"><input value={node.placeholder || ""} onChange={e => set("placeholder", e.target.value)}/></Field>}
-      {node.type === "select" && <Field label="Options"><textarea value={(node.options || []).join("\n")} onChange={e => set("options", e.target.value.split("\n").filter(Boolean))}/></Field>}
-      {node.type === "button" && <><Field label="Link"><input value={node.href || ""} onChange={e => set("href", e.target.value)} placeholder="/about or https://..."/></Field><Field label="Open in"><select value={node.target || "_self"} onChange={e => set("target", e.target.value as "_self"|"_blank")}><option value="_self">Same tab</option><option value="_blank">New tab</option></select></Field></>}
+      {["select","list","radio"].includes(node.type) && <Field label="Options"><textarea value={(node.options || []).join("\n")} onChange={e => set("options", e.target.value.split("\n").map(v => v.trim()).filter(Boolean))}/></Field>}
+      {["button","link"].includes(node.type) && <><Field label="Link"><input value={node.href || ""} onChange={e => set("href", e.target.value)} placeholder="/about or https://..."/></Field><Field label="Open in"><select value={node.target || "_self"} onChange={e => set("target", e.target.value as "_self"|"_blank")}><option value="_self">Same tab</option><option value="_blank">New tab</option></select></Field></>}
+      {["checkbox","switch"].includes(node.type) && <Field label="Default state"><label className="toggle-line"><input type="checkbox" checked={!!node.checked} onChange={e => set("checked",e.target.checked)}/><span>{node.checked ? "On / checked" : "Off / unchecked"}</span></label></Field>}
+      {["checkbox","radio"].includes(node.type) && <><Field label="Field name"><input value={node.nameAttr || ""} onChange={e => set("nameAttr",e.target.value)}/></Field><Field label="Value"><input value={node.value || ""} onChange={e => set("value",e.target.value)}/></Field></>}
+      {node.type === "range" && <><Field label="Value"><input type="number" value={Number(node.value ?? 50)} onChange={e => set("value",e.target.value)}/></Field><Field label="Minimum"><input type="number" value={node.min ?? 0} onChange={e => set("min",Number(e.target.value))}/></Field><Field label="Maximum"><input type="number" value={node.max ?? 100} onChange={e => set("max",Number(e.target.value))}/></Field><Field label="Step"><input type="number" value={node.step ?? 1} onChange={e => set("step",Number(e.target.value))}/></Field></>}
+      {["embed","map"].includes(node.type) && <><Field label="Embed URL"><textarea value={node.src || ""} onChange={e => set("src",e.target.value)} placeholder="https://..."/></Field><Field label="Title"><input value={node.alt || ""} onChange={e => set("alt",e.target.value)}/></Field></>}
+      {node.type === "table" && <TableEditor node={node}/>}
+      {["tabs","accordion"].includes(node.type) && <InteractiveItemsEditor node={node}/>}
+      {node.type === "carousel" && <CarouselEditor node={node}/>}
+      {node.type === "socials" && <SocialLinksEditor node={node}/>}
+      {node.type === "symbol" && <Field label="Component name"><input value={node.componentName || ""} onChange={e => set("componentName",e.target.value)} placeholder="My Component"/></Field>}
       {node.meta?.sourceId && <div className="source-detail"><span>Block source</span><code>{String(node.meta.sourceId)}</code></div>}
     </PropertySection>
 
@@ -70,6 +79,45 @@ function safeColor(value:string,fallback:string){return /^#[0-9a-f]{6}$/i.test(v
 function PropertySection({title,children}:{title:string;children:ReactNode}){return <section className="property-section"><h3>{title}</h3>{children}</section>}
 function Field({label,children}:{label:string;children:ReactNode}){return <label className="property-field"><span>{label}</span><div>{children}</div></label>}
 function StyleInput({label,value,onChange}:{label:string;value:string;onChange:(v:string)=>void}){return <Field label={label}><input value={value} onChange={e => onChange(e.target.value)}/></Field>}
+
+
+function TableEditor({ node }: { node: BuilderNode }) {
+  const { updateNode } = useBuilder();
+  const headers = (node.table?.headers || []).join(", ");
+  const rows = (node.table?.rows || []).map(row => row.join(" | ")).join("\n");
+  return <>
+    <Field label="Headers"><textarea value={headers} onChange={e => updateNode(node.id,{ table:{ headers:e.target.value.split(",").map(v=>v.trim()).filter(Boolean), rows:node.table?.rows || [] } })}/></Field>
+    <Field label="Rows"><textarea value={rows} onChange={e => updateNode(node.id,{ table:{ headers:node.table?.headers || [], rows:e.target.value.split("\n").filter(Boolean).map(line=>line.split("|").map(v=>v.trim())) } })} placeholder="Ava | Designer | Active"/></Field>
+  </>;
+}
+
+function InteractiveItemsEditor({ node }: { node: BuilderNode }) {
+  const { updateNode } = useBuilder();
+  const text = (node.items || []).map(item => `${item.title} | ${item.body}`).join("\n");
+  return <Field label="Items"><textarea value={text} onChange={e => updateNode(node.id,{ items:e.target.value.split("\n").filter(Boolean).map(line=>{const [title,...body]=line.split("|");return {title:(title||"Item").trim(),body:body.join("|").trim()};}) })} placeholder="Title | Content"/></Field>;
+}
+
+function CarouselEditor({ node }: { node: BuilderNode }) {
+  const { project, updateNode, setSidebarTab } = useBuilder();
+  const text = (node.slides || []).map(slide => `${slide.src} | ${slide.caption || ""} | ${slide.alt || ""}`).join("\n");
+  const images = project.assets.filter(asset => asset.kind === "image");
+  const addAsset = (assetId: string) => {
+    if (!assetId) return;
+    const asset = images.find(item => item.id === assetId);
+    if (!asset) return;
+    updateNode(node.id,{ slides:[...(node.slides || []),{src:`asset://${asset.id}`,caption:asset.name,alt:asset.name}] });
+  };
+  return <>
+    <Field label="Slides"><textarea value={text} onChange={e => updateNode(node.id,{ slides:e.target.value.split("\n").filter(Boolean).map(line=>{const [src,caption,alt]=line.split("|");return {src:(src||"").trim(),caption:(caption||"").trim(),alt:(alt||caption||"").trim()};}) })} placeholder="https://image.jpg | Caption | Alt text"/></Field>
+    <Field label="Add asset"><div className="media-source-actions"><select defaultValue="" onChange={e => { addAsset(e.target.value); e.currentTarget.value=""; }}><option value="">Choose uploaded image…</option>{images.map(asset => <option key={asset.id} value={asset.id}>{asset.name}</option>)}</select><button type="button" onClick={() => setSidebarTab("assets")}><FolderOpen size={12}/>Assets</button></div></Field>
+  </>;
+}
+
+function SocialLinksEditor({ node }: { node: BuilderNode }) {
+  const { updateNode } = useBuilder();
+  const text = (node.links || []).map(link => `${link.label} | ${link.href}`).join("\n");
+  return <Field label="Social links"><textarea value={text} onChange={e => updateNode(node.id,{ links:e.target.value.split("\n").filter(Boolean).map(line=>{const [label,...href]=line.split("|");return {label:(label||"Link").trim(),href:href.join("|").trim()};}) })} placeholder="Instagram | https://instagram.com"/></Field>;
+}
 
 function MediaSourceEditor({ node }: { node: BuilderNode }) {
   const { project, updateNode, addProjectAsset, setSidebarTab } = useBuilder();
