@@ -29,7 +29,14 @@ jobs:
           gzip -dc /tmp/reactexp.patch.gz > /tmp/reactexp.patch
           git apply --check /tmp/reactexp.patch
           git apply /tmp/reactexp.patch
-          rm -f rex2.part.* reactexp.part.* react-export.trigger
+
+          cat rnew.part.* > /tmp/rnew.b64
+          base64 -d /tmp/rnew.b64 > /tmp/rnew.tar.gz
+          echo "7b385123b0125b0d9f4afe0e3dc3ef95691d97871631cdcdb4f7d172346d4e42  /tmp/rnew.tar.gz" | sha256sum -c -
+          gzip -t /tmp/rnew.tar.gz
+          tar -xzf /tmp/rnew.tar.gz
+
+          rm -f rex2.part.* rnew.part.* reactexp.part.* react-export.trigger
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Verify Phase 3 compatibility
