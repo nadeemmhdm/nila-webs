@@ -21,7 +21,11 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Build editor
-        run: npm run build
+      - name: Verify Phase 3 compatibility
+        run: npm run verify:phase3
+      - name: Verify Phase 4 prompt engine
+        run: npm run verify:phase4
       - name: Phase 3 regression gate
         run: npm run check:phase3
+      - name: Build editor
+        run: npm run build
