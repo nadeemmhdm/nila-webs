@@ -2,7 +2,7 @@ import { ArrowRight, CalendarDays, FilePlus2, FolderOpen, LayoutTemplate, MoreHo
 import { useEffect, useMemo, useState } from "react";
 import { createProjectModel, deleteProjectFromStorage, listProjects, loadProjectById, saveProject } from "../lib/project-storage";
 import { deleteAssetBlob } from "../lib/assets";
-import { siteTemplateLibrary } from "../templates/library";
+import { siteTemplateRegistry } from "../templates/site-templates";
 import type { BuilderProject, ProjectSummary } from "../types";
 
 export default function ProjectsHome({ onOpen }: { onOpen: (project: BuilderProject) => void }) {
@@ -59,7 +59,7 @@ function CreateProjectDialog({ onClose, onCreate }: { onClose: () => void; onCre
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [templateId, setTemplateId] = useState("blank");
-  const templates = [{ id: "blank", name: "Blank Project", description: "Start with an empty page and the global navbar/footer." }, ...siteTemplateLibrary.map(item => ({ id: item.id, name: item.name, description: item.description || "Starter website" }))];
+  const templates = [{ id: "blank", name: "Blank Project", description: "Start with an empty page and the global navbar/footer.", pageCount: 1, thumbnail: "" }, ...siteTemplateRegistry.map(item => ({ id: item.id, name: item.name, description: item.description, pageCount: item.pageCount, thumbnail: item.thumbnail || "" }))];
   const create = () => {
     if (!name.trim()) return alert("Enter a project name.");
     const project = createProjectModel(name, description, templateId);
@@ -68,7 +68,7 @@ function CreateProjectDialog({ onClose, onCreate }: { onClose: () => void; onCre
   return <div className="dialog-backdrop" onMouseDown={e => e.currentTarget === e.target && onClose()}><section className="create-project-dialog">
     <div className="dialog-header"><div><span className="eyebrow">New workspace</span><h2>Create project</h2><p>Name your site, add an optional description and choose a starting point.</p></div><button className="dialog-close" onClick={onClose}><X size={17}/></button></div>
     <div className="dialog-form"><label><span>Project name <b>*</b></span><input autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Interman Website"/></label><label><span>Description <em>optional</em></span><textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What are you building?"/></label></div>
-    <div className="template-picker"><div className="template-picker-head"><div><span>Start from</span><strong>{templates.find(t => t.id === templateId)?.name}</strong></div><small>Blank is default</small></div><div className="template-choice-grid">{templates.map((template, index) => <button key={template.id} className={`template-choice ${templateId === template.id ? "selected" : ""}`} onClick={() => setTemplateId(template.id)}><div className={`template-choice-preview variant-${index % 4}`}><LayoutTemplate size={20}/></div><div><strong>{template.name}</strong><span>{template.description}</span></div>{templateId === template.id && <i className="selected-dot"/>}</button>)}</div></div>
+    <div className="template-picker"><div className="template-picker-head"><div><span>Start from</span><strong>{templates.find(t => t.id === templateId)?.name}</strong></div><small>Blank is default</small></div><div className="template-choice-grid">{templates.map((template, index) => <button key={template.id} className={`template-choice ${templateId === template.id ? "selected" : ""}`} onClick={() => setTemplateId(template.id)}><div className={`template-choice-preview variant-${index % 4}`} style={template.thumbnail?{backgroundImage:`linear-gradient(180deg,transparent,#02061766),url(${template.thumbnail})`}:undefined}><LayoutTemplate size={20}/><span>{template.pageCount} page{template.pageCount===1?"":"s"}</span></div><div><strong>{template.name}</strong><span>{template.description}</span></div>{templateId === template.id && <i className="selected-dot"/>}</button>)}</div></div>
     <footer className="dialog-footer"><button className="cancel-dialog" onClick={onClose}>Cancel</button><button className="create-dialog" onClick={create}><Plus size={14}/>Create project</button></footer>
   </section></div>;
 }

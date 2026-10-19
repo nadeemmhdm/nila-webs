@@ -9,7 +9,7 @@ Splash/boot experience, projects dashboard, recent/all projects, blank/template 
 ## Phase 3 — Complete element system ✅
 Completed in v0.5.0. Includes advanced form controls and validation semantics, badges/lists/navigation/media/data elements, embeds/maps, table editor, tabs, accordion, modal, autoplay carousel, social links, custom HTML/code, alert/avatar/progress/breadcrumb/rating, accessibility properties, and project-level reusable linked components with save/insert/sync/detach/delete workflows. Export parity and a Phase 3 CI regression verifier are included.
 
-## Phase 4 — Block and template engine 🟣 in progress
+## Phase 4 — Block and template engine ✅
 Started in v0.6.0. The prompt adapter safely converts supplied Shadcn/React/TSX prompts into editable builder trees; 78 supplied variants are indexed as searchable catalog entries. Theme presets/tokens, prompt/code file import and project-saved imported blocks are live. Remaining Phase 4 work will increase pixel-level adapters for complex variants, add dependency manifests/thumbnails/favorites and expand complete-site template composition.
 
 ## Phase 5 — Responsive design system

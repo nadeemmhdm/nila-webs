@@ -17,14 +17,20 @@ export type InputKind = "text" | "email" | "password" | "number" | "date" | "dat
 export type InputType = InputKind;
 export type ListStyle = "disc" | "decimal" | "none";
 export type FormMethod = "get" | "post";
+export type PromptArtifactType = "section" | "component" | "theme";
 
 export interface ThemeColors {
   background: string; surface: string; surfaceAlt: string; text: string; muted: string; primary: string; primaryText: string; secondary: string; border: string; success: string; warning: string; danger: string;
 }
 export interface ProjectTheme {
-  id: string; name: string; colors: ThemeColors; typography: { body: string; heading: string }; radius: string; shadow: string;
+  id: string;
+  name: string;
+  colors: ThemeColors;
+  typography: { body: string; heading: string };
+  radius: string;
+  shadow: string;
+  source?: "preset" | "custom" | "prompt";
 }
-
 
 export interface NodeStyle {
   background: string;
@@ -60,27 +66,10 @@ export interface NodeResponsiveStyle {
   mobile?: Partial<NodeStyle>;
 }
 
-export interface InteractiveItem {
-  title: string;
-  body: string;
-}
-
-export interface TableModel {
-  headers: string[];
-  rows: string[][];
-  caption?: string;
-}
-
-export interface CarouselSlide {
-  src: string;
-  alt?: string;
-  caption?: string;
-}
-
-export interface SocialLink {
-  label: string;
-  href: string;
-}
+export interface InteractiveItem { title: string; body: string; }
+export interface TableModel { headers: string[]; rows: string[][]; caption?: string; }
+export interface CarouselSlide { src: string; alt?: string; caption?: string; }
+export interface SocialLink { label: string; href: string; }
 
 export interface BuilderNode {
   id: string;
@@ -163,7 +152,11 @@ export interface ImportedBlock {
   source?: string;
   dependencies?: string[];
   detectedKind?: string;
+  artifactType?: PromptArtifactType;
   animated?: boolean;
+  revision?: number;
+  sourceHash?: string;
+  thumbnail?: string;
 }
 
 export interface SavedComponent {
@@ -185,7 +178,6 @@ export interface BuilderPage {
 
 export type AssetKind = "image" | "video";
 export type AssetSource = "upload" | "url";
-
 export interface ProjectAsset {
   id: string;
   name: string;
@@ -211,9 +203,11 @@ export interface BuilderProject {
   components: SavedComponent[];
   importedBlocks: ImportedBlock[];
   theme: ProjectTheme;
+  savedThemes: ProjectTheme[];
+  favoriteLibraryIds: string[];
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 5;
+  schemaVersion: 6;
 }
 
 export interface ProjectSummary {
@@ -235,6 +229,37 @@ export interface LibraryItem {
   description?: string;
   sourceId?: string;
   thumbnail?: string;
+  tags?: string[];
+  sourceType?: "native" | "prompt" | "project";
   create?: () => BuilderNode;
   createPageNodes?: () => BuilderNode[];
+}
+
+export interface SiteTemplatePayload {
+  pages: BuilderPage[];
+  globalNavbar: BuilderNode;
+  globalFooter: BuilderNode;
+  theme: ProjectTheme;
+}
+
+export interface SiteTemplateDefinition {
+  id: string;
+  name: string;
+  group: string;
+  description: string;
+  thumbnail?: string;
+  tags: string[];
+  pageCount: number;
+  build: () => SiteTemplatePayload;
+}
+
+export interface ExportDependencyManifest {
+  generatedBy: "Nila Webs";
+  schemaVersion: 1;
+  projectId: string;
+  usedSourceIds: string[];
+  sourceDependencies: string[];
+  runtimeDependencies: string[];
+  usedComponentIds: string[];
+  usedAssetIds: string[];
 }

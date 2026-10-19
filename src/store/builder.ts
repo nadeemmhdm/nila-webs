@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { BuilderNode, BuilderPage, BuilderProject, ImportedBlock, NodeStyle, ProjectAsset, ProjectTheme, SavedComponent, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
 import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
+import { reconvertImportedBlock as reconvertBlock } from "../lib/prompt-adapter";
+import { buildSiteTemplate } from "../templates/site-templates";
 
 const HISTORY_LIMIT = 60;
 const load = (): BuilderProject => loadInitialProject();
@@ -59,9 +61,14 @@ type State = {
   addProjectAsset: (asset: ProjectAsset) => void;
   removeProjectAsset: (assetId: string) => void;
   setTheme: (theme: ProjectTheme) => void;
+  saveCurrentTheme: (name?: string) => void;
+  deleteSavedTheme: (themeId: string) => void;
   restyleCurrentPage: () => void;
+  toggleFavoriteLibraryItem: (itemId: string) => void;
   addImportedBlock: (block: ImportedBlock) => void;
+  reconvertImportedBlock: (blockId: string) => void;
   deleteImportedBlock: (blockId: string) => void;
+  applySiteTemplate: (templateId: string) => void;
   undo: () => void;
   redo: () => void;
 
@@ -113,6 +120,12 @@ export const useBuilder = create<State>((set, get) => ({
   addProjectAsset: asset => set(s => commit(s, { ...s.project, assets: [...s.project.assets.filter(a => a.id !== asset.id), asset] })),
   removeProjectAsset: assetId => set(s => commit(s, { ...s.project, assets: s.project.assets.filter(a => a.id !== assetId) })),
   setTheme: theme => set(s => commit(s, { ...s.project, theme: structuredClone(theme) })),
+  saveCurrentTheme: name => set(s => {
+    const now = Date.now().toString(36);
+    const saved: ProjectTheme = { ...structuredClone(s.project.theme), id: s.project.theme.id.startsWith("saved-") ? s.project.theme.id : `saved-${now}`, name: (name || s.project.theme.name || "Saved Theme").trim(), source: "custom" };
+    return commit(s, { ...s.project, theme: saved, savedThemes: [...s.project.savedThemes.filter(t => t.id !== saved.id), saved] });
+  }),
+  deleteSavedTheme: themeId => set(s => commit(s, { ...s.project, savedThemes: s.project.savedThemes.filter(t => t.id !== themeId) })),
   restyleCurrentPage: () => set(s => {
     const theme = s.project.theme;
     const restyle = (nodes: BuilderNode[]): BuilderNode[] => nodes.map(node => {
@@ -130,8 +143,24 @@ export const useBuilder = create<State>((set, get) => ({
     const pages = s.project.pages.map(page => page.id === s.project.activePageId ? { ...page, nodes: restyle(page.nodes) } : page);
     return commit(s, { ...s.project, pages, theme });
   }),
+  toggleFavoriteLibraryItem: itemId => set(s => {
+    const favorites = s.project.favoriteLibraryIds.includes(itemId) ? s.project.favoriteLibraryIds.filter(id => id !== itemId) : [...s.project.favoriteLibraryIds, itemId];
+    return commit(s, { ...s.project, favoriteLibraryIds: favorites });
+  }),
   addImportedBlock: block => set(s => commit(s, { ...s.project, importedBlocks: [...s.project.importedBlocks.filter(item => item.id !== block.id), block] })),
+  reconvertImportedBlock: blockId => set(s => {
+    const block = s.project.importedBlocks.find(item => item.id === blockId);
+    if (!block?.source) return s;
+    const updated = reconvertBlock(block);
+    return commit(s, { ...s.project, importedBlocks: s.project.importedBlocks.map(item => item.id === blockId ? updated : item) });
+  }),
   deleteImportedBlock: blockId => set(s => commit(s, { ...s.project, importedBlocks: s.project.importedBlocks.filter(item => item.id !== blockId) })),
+  applySiteTemplate: templateId => set(s => {
+    const built = buildSiteTemplate(templateId);
+    if (!built) return s;
+    const pages = built.pages.map(page => ({ ...page, nodes: page.nodes.map(cloneNode) }));
+    return commit(s, { ...s.project, templateId, pages, activePageId: pages[0].id, globalNavbar: built.globalNavbar, globalFooter: built.globalFooter, theme: structuredClone(built.theme) }, { selectedId: null });
+  }),
 
   undo: () => set(s => {
     const previous = s.past.at(-1); if (!previous) return s;

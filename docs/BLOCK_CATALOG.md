@@ -106,3 +106,12 @@ The generic element engine is complete in v0.5.0, including form semantics, acce
 ## Phase 4 prompt adapter
 
 Nila Webs v0.6.0 indexes 78 variants from the supplied prompt/code bundle. Every catalog card can create an editable native node tree; prompt/TSX text can also be imported at runtime from the new Import activity. The importer extracts user-facing copy, image/video URLs, interactive family hints and motion signals and does not execute arbitrary pasted JavaScript.
+
+## Phase 4 final registry
+
+- Prompt/code compiler classifies imported source as section, component, or theme and retains the original source for future re-conversion.
+- Supplied prompt catalog: 78 variants split between section and component registries with search, group/source filters, favorites, motion badges, and visual thumbnails when media is available.
+- Family-aware adapters: pricing, portfolio, features, about, team, testimonials, services, CTA, contact, FAQ/accordion, blog, newsletter/waitlist, logo cloud, gallery, bento, bio-link, download, auth/MFA/verify-email, timeline, cookie consent, alerts, animated text/list, dock, autocomplete, and avatar.
+- Theme registry: 10 built-in presets plus project-saved and prompt-detected themes.
+- Multi-page templates: Typefolio Portfolio, Resume Pro, Crypgo Launch, Creative Agency, and SaaS Product.
+- Export creates a dependency provenance manifest and includes only referenced uploaded assets and reusable component definitions.

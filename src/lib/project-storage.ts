@@ -1,6 +1,7 @@
 import type { BuilderPage, BuilderProject, ProjectSummary } from "../types";
 import { uid } from "./nodes";
-import { createDefaultFooter, createDefaultNavbar, siteTemplateLibrary } from "../templates/library";
+import { createDefaultFooter, createDefaultNavbar } from "../templates/library";
+import { buildSiteTemplate } from "../templates/site-templates";
 import { defaultTheme } from "../templates/themes";
 
 const INDEX_KEY = "nila-webs-project-index-v1";
@@ -26,22 +27,25 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
     components: Array.isArray(raw.components) ? raw.components : [],
     importedBlocks: Array.isArray(raw.importedBlocks) ? raw.importedBlocks : [],
     theme: raw.theme && typeof raw.theme === "object" ? raw.theme : structuredClone(defaultTheme),
+    savedThemes: Array.isArray(raw.savedThemes) ? raw.savedThemes : [],
+    favoriteLibraryIds: Array.isArray(raw.favoriteLibraryIds) ? raw.favoriteLibraryIds.filter((id): id is string => typeof id === "string") : [],
     createdAt,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : createdAt,
-    schemaVersion: 5
+    schemaVersion: 6
   };
   return project;
 }
 
 export function createProjectModel(name = "Untitled Project", description = "", templateId = "blank"): BuilderProject {
   const now = new Date().toISOString();
-  const template = templateId === "blank" ? undefined : siteTemplateLibrary.find(item => item.id === templateId);
-  const nodes = template?.createPageNodes?.() || [];
-  const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes, showNavbar: true, showFooter: true };
+  const built = templateId === "blank" ? undefined : buildSiteTemplate(templateId);
+  const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true };
+  const pages = built?.pages || [home];
   return {
     id: uid("project"), name: name.trim() || "Untitled Project", description: description.trim(), templateId,
-    pages: [home], activePageId: home.id, globalNavbar: createDefaultNavbar(), globalFooter: createDefaultFooter(), assets: [], components: [], importedBlocks: [], theme: structuredClone(defaultTheme),
-    createdAt: now, updatedAt: now, schemaVersion: 5
+    pages, activePageId: pages[0].id, globalNavbar: built?.globalNavbar || createDefaultNavbar(), globalFooter: built?.globalFooter || createDefaultFooter(), assets: [], components: [], importedBlocks: [],
+    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [],
+    createdAt: now, updatedAt: now, schemaVersion: 6
   };
 }
 

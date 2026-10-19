@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.6.0 (Phase 4 started; Phase 3 complete)
+## Current build — v0.7.0 (Phase 4 started; Phase 3 complete)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
