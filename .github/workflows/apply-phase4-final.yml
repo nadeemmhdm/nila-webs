@@ -1,14 +1,49 @@
-name: Phase 4 Apply (Retired)
+name: Apply Phase 5 Complete
 
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - 'p5stage.tar.gz'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  retired:
+  apply:
     runs-on: ubuntu-latest
     steps:
-      - name: Retired
-        run: echo "Phase 4 final source is applied and validated. This workflow is retained only for audit history."
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify and extract Phase 5 source
+        run: |
+          echo "be4d69a18319ce7663d216f5aa23ee90da361922d44c81db9855a184ee1bce40  p5stage.tar.gz" | sha256sum -c -
+          gzip -t p5stage.tar.gz
+          tar -xzf p5stage.tar.gz
+          rm -f p5stage.tar.gz
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify Phase 3 compatibility
+        run: npm run verify:phase3
+      - name: Verify Phase 4 engine
+        run: npm run verify:phase4
+      - name: Verify Phase 4 final scope
+        run: npm run verify:phase4-final
+      - name: Verify Phase 5 responsive system
+        run: npm run verify:phase5
+      - name: Regression gate
+        run: npm run check:phase3
+      - name: Production build
+        run: npm run build
+      - name: Commit Phase 5 final source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: complete phase 5 responsive design system"
+          git push origin HEAD:main
