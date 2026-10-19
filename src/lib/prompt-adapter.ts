@@ -1,8 +1,8 @@
-import type { BuilderNode, ImportedBlock } from "../types";
-import { createNode, uid } from "./nodes";
+import type { BuilderNode, ImportedBlock, NodeStyle } from "../types";
+import { createNode, defaultStyle, uid } from "./nodes";
 import type { PromptCatalogItem } from "../templates/prompt-catalog";
 
-const S = (style: Record<string, unknown>) => style as BuilderNode["style"];
+const S = (style: Partial<NodeStyle>): NodeStyle => ({ ...defaultStyle(), ...style });
 const human = (value: string) => value.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
 const unique = <T,>(list: T[]) => Array.from(new Set(list));
 

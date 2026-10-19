@@ -1,7 +1,9 @@
-import type { BuilderNode, InputKind, LibraryItem, NodeType } from "../types";
+import type { BuilderNode, InputKind, LibraryItem, NodeStyle, NodeType } from "../types";
 import { createNode, defaultStyle, uid } from "../lib/nodes";
 
-const node = (type: NodeType, name: string, extra: Partial<BuilderNode> = {}): BuilderNode => ({
+type NodeExtra = Omit<Partial<BuilderNode>, "style"> & { style?: Partial<NodeStyle> };
+
+const node = (type: NodeType, name: string, extra: NodeExtra = {}): BuilderNode => ({
   id: uid(type), type, name, animation: "none", hoverAnimation: "none", animationDuration: .7, animationDelay: 0,
   responsive: {}, hiddenOn: {}, ...extra, style: { ...defaultStyle(), ...(extra.style || {}) }
 });
