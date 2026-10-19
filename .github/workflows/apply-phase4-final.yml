@@ -20,12 +20,20 @@ jobs:
         run: |
           cat phase4part.* > /tmp/phase4.b64
           base64 -d /tmp/phase4.b64 | gzip -d > /tmp/phase4.patch
-          EXCLUDES="--exclude=src-tauri/tauri.conf.json --exclude=src/lib/exporter.ts --exclude=src/store/builder.ts --exclude=src/templates/phase3-elements.ts --exclude=src/types.ts --exclude=.github/workflows/web-build.yml"
+          EXCLUDES="--exclude=README.md --exclude=docs/BLOCK_CATALOG.md --exclude=docs/ROADMAP.md --exclude=package.json --exclude=src-tauri/Cargo.toml --exclude=src-tauri/tauri.conf.json --exclude=src/components/NodeRenderer.tsx --exclude=src/components/PropertiesPanel.tsx --exclude=src/phase3.css --exclude=src/lib/exporter.ts --exclude=src/store/builder.ts --exclude=src/templates/phase3-elements.ts --exclude=src/types.ts --exclude=.github/workflows/web-build.yml"
           git apply --check $EXCLUDES /tmp/phase4.patch
           git apply $EXCLUDES /tmp/phase4.patch
+
           cat p4conflict.part.* > /tmp/p4conflict.b64
           base64 -d /tmp/p4conflict.b64 | tar -xz
-          rm -f p4conflict.part.* phase4part.* phase4final.trigger
+
+          cat p4fix.part.* > /tmp/p4fix.b64
+          base64 -d /tmp/p4fix.b64 > /tmp/p4fix.tar.gz
+          echo "f66166bb41b35c1c8d47eeec065c599013ad1ccb479b614d7a0dc0713496317a  /tmp/p4fix.tar.gz" | sha256sum -c -
+          gzip -t /tmp/p4fix.tar.gz
+          tar -xzf /tmp/p4fix.tar.gz
+
+          rm -f p4conflict.part.* p4fix.part.* phase4part.* phase4final.trigger
           rm -f phase3fin.part.* phase3final.trigger
       - name: Verify source before commit
         run: |
