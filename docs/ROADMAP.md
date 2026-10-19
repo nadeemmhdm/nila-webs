@@ -7,10 +7,10 @@ Desktop shell, React/Vite editor, multi-page model, global navbar/footer, base p
 Splash/boot experience, projects dashboard, recent/all projects, blank/template project creation, MIT App Inventor-style activity bar, collapsible panels, Layers tree, Assets library, image/video upload or URL sources, live interactions, full preview, responsive properties, visibility per breakpoint, undo/redo, copy/duplicate, nested drag-and-drop and improved editor UI. Uploaded project media exports to `public/assets/`.
 
 ## Phase 3 — Complete element system ✅
-Completed in v0.5.0. Includes advanced form controls and validation semantics, badges/lists/icons, embeds/maps/sandboxed HTML, editable tables, tabs, accordion, modal, carousel, social links, synced component-symbol instances, accessibility properties, keyboard editing shortcuts, export parity and an automated Phase 3 regression gate.
+Completed in v0.5.0. Includes advanced form controls and validation semantics, badges/lists/navigation/media/data elements, embeds/maps, table editor, tabs, accordion, modal, autoplay carousel, social links, custom HTML/code, alert/avatar/progress/breadcrumb/rating, accessibility properties, and project-level reusable linked components with save/insert/sync/detach/delete workflows. Export parity and a Phase 3 CI regression verifier are included.
 
-## Phase 4 — Block and template engine
-Import/adapt the full supplied Shadcn block catalog, visual property manifests, reusable variants, starter websites and dependency-aware complex React blocks.
+## Phase 4 — Block and template engine 🟣 in progress
+Started in v0.6.0. The prompt adapter safely converts supplied Shadcn/React/TSX prompts into editable builder trees; 78 supplied variants are indexed as searchable catalog entries. Theme presets/tokens, prompt/code file import and project-saved imported blocks are live. Remaining Phase 4 work will increase pixel-level adapters for complex variants, add dependency manifests/thumbnails/favorites and expand complete-site template composition.
 
 ## Phase 5 — Responsive design system
 Global colors, typography, tokens, custom fonts, breakpoint controls, reusable classes, variables, spacing scale and theme presets.

@@ -2,13 +2,13 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.5.0 (Phase 2 workspace + assets)
+## Current build — v0.6.0 (Phase 4 started; Phase 3 complete)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
 - Project creation flow with required name, optional description, **Blank** default, and starter-template selection.
 - Recent projects plus an all-projects library with search and reopen/delete actions.
-- MIT App Inventor/Figma-style **Build / Pages / Layers / Assets** workspace.
+- MIT App Inventor/Figma-style **Build / Pages / Layers / Assets / Themes / Import** workspace.
 - Collapsible left and right sidebars.
 - Desktop, tablet and mobile canvas sizes.
 - Per-breakpoint style overrides and visibility controls.
@@ -28,13 +28,24 @@
 - Standalone React + Vite website ZIP export.
 - Initial ShadcnSpace-inspired section adapters and uploaded starter-template adapters.
 
-- Phase 3 advanced element system with link, badge, list, checkbox, radio group, switch, range, file input, embeds, maps and tables.
-- Stateful Tabs, Accordion, Modal and Carousel components work in Live/Preview mode and in exported React/Vite sites.
-- Social Links and Component Symbol containers are available as reusable visual building blocks.
+- Phase 3 complete element system with advanced text/actions/media/forms/data/interactive/advanced blocks.
+- Linked reusable project components: save a selected block as a component, insert linked instances, sync changes across instances, detach, or delete the definition.
+- Advanced form semantics: email/password/number/date/time/URL/search fields, required state, name/value, pattern, min/max length, textarea rows, file accept/multiple, and form action/method.
+- Stateful Tabs, Accordion, Modal and Carousel components work in Live/Preview mode and exported React/Vite sites; Carousel supports autoplay, interval and dots.
+- Custom HTML and code blocks plus Alert, Avatar, Progress, Breadcrumb and Rating elements.
+- Accessibility controls for ARIA label, role, tooltip/title and tab index, with image/frame accessibility warnings.
+- Complex visual editors for table caption/rows, carousel slides/assets, social/breadcrumb links and reusable components.
+- Phase 3 regression verifier runs in CI before the production TypeScript/Vite build.
+
+- Phase 4 Prompt Adapter Engine converts pasted Shadcn/React/TSX prompts into safe editable builder nodes without executing arbitrary code.
+- 78 user-supplied prompt/catalog variants are indexed in the Sections library with extracted copy, media and animation hints.
+- Project theme system with preset palettes, typography, radius/shadow tokens, live CSS variables and current-page restyling.
+- Prompt/code files can be loaded from `.txt`, `.md`, `.tsx`, `.ts`, `.jsx` or `.js`, added to canvas, or saved into the project block library.
+- Theme tokens are preserved in standalone React/Vite exports.
 
 ## Included visual elements
 
-Heading, text, text link, badge, list, button, social links, image, video, icon, carousel, embed/iFrame, map, input, textarea, select, checkbox, radio group, switch, range, file input, label, form, table, tabs, accordion, modal, component symbol, card, container, section, spacer and divider.
+Heading, text, text link, badge, ordered/unordered list, button, social links, breadcrumb, image, video, avatar, icon, carousel, embed/iFrame, map, text/email/password/number/date/time/URL/search input variants, textarea, select, checkbox, radio group, switch, range, file input, label, form, table, progress, rating, alert, tabs, accordion, modal, custom HTML, code block, linked component group, card, container, section, spacer and divider.
 
 ## Included section families
 
@@ -81,7 +92,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The editor stores websites a
 
 ## 10-phase roadmap
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phase 1 is complete; Phase 2 now includes the project workspace, startup flow and first production asset pipeline in addition to the editor UX work.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phase 1 and Phase 3 are complete. Phase 2 already delivered the project workspace, startup flow and production asset pipeline; later phases continue the full block/template, design-system and deployment roadmap.
 
 ## Contributing and security
 
@@ -94,21 +105,3 @@ Some starter concepts and block adapters are derived from user-supplied MIT-lice
 ## License
 
 Nila Webs source is available under the MIT License. See [`LICENSE`](LICENSE).
-
-
-## Phase 3 complete — v0.5.0
-
-The complete element-system milestone now includes advanced form semantics and validation, accessibility metadata, sandboxed custom HTML, synced component-symbol instances, richer table/list controls, modal and carousel behavior controls, keyboard editing shortcuts, editor/export parity, and an automated Phase 3 regression gate in CI.
-
-### Phase 3 final capabilities
-
-- Typography/actions: text links, badges, editable lists and quick icon presets
-- Forms: text/email/password/number/date/datetime/tel/url/search inputs, textarea, select, checkbox, radio, switch, range and file input
-- Validation: required, pattern, min/max length, field names/defaults, file accept/multiple
-- Media/embeds: image/video assets, carousel, iframe embed, map and sandboxed custom HTML
-- Data/interaction: editable table, tabs, accordion and modal
-- Components: duplicated Component Symbols keep a sync key and can be synchronized from the Properties panel
-- Accessibility: ARIA label, title/tooltip and image alt guidance
-- Editor productivity: undo/redo plus keyboard copy, cut, paste, duplicate, delete and selection clear
-- Export parity: Phase 3 element behavior is emitted into standalone React + Vite exports
-- CI: `npm run check:phase3` validates the Phase 3 registry/runtime/export contract

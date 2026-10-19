@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { BuilderNode, BuilderPage, BuilderProject, NodeStyle, ProjectAsset, Viewport } from "../types";
+import type { BuilderNode, BuilderPage, BuilderProject, ImportedBlock, NodeStyle, ProjectAsset, ProjectTheme, SavedComponent, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
 import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
 
@@ -8,7 +8,31 @@ const load = (): BuilderProject => loadInitialProject();
 const persist = (project: BuilderProject) => saveProject(project);
 const snapshot = (project: BuilderProject) => structuredClone(project);
 
-export type SidebarTab = "pages" | "library" | "layers" | "assets";
+function componentTemplate(node: BuilderNode): BuilderNode {
+  const next = structuredClone(node);
+  delete next.componentId;
+  return next;
+}
+
+function replaceComponentInstances(nodes: BuilderNode[], componentId: string, template: BuilderNode): BuilderNode[] {
+  return nodes.map(node => {
+    if (node.componentId === componentId) {
+      const synced = cloneNode(template);
+      return { ...synced, id: node.id, componentId, componentName: node.componentName || template.componentName || template.name };
+    }
+    return { ...node, children: node.children ? replaceComponentInstances(node.children, componentId, template) : node.children };
+  });
+}
+
+function detachComponentInstances(nodes: BuilderNode[], componentId: string): BuilderNode[] {
+  return nodes.map(node => ({
+    ...node,
+    componentId: node.componentId === componentId ? undefined : node.componentId,
+    children: node.children ? detachComponentInstances(node.children, componentId) : node.children
+  }));
+}
+
+export type SidebarTab = "pages" | "library" | "layers" | "assets" | "themes" | "import";
 
 type State = {
   project: BuilderProject;
@@ -34,6 +58,10 @@ type State = {
   setProjectDescription: (description: string) => void;
   addProjectAsset: (asset: ProjectAsset) => void;
   removeProjectAsset: (assetId: string) => void;
+  setTheme: (theme: ProjectTheme) => void;
+  restyleCurrentPage: () => void;
+  addImportedBlock: (block: ImportedBlock) => void;
+  deleteImportedBlock: (blockId: string) => void;
   undo: () => void;
   redo: () => void;
 
@@ -55,7 +83,10 @@ type State = {
   duplicateNode: (id: string) => void;
   copyNode: (id: string) => void;
   pasteNode: (parentId?: string | null) => void;
-  syncSymbolInstances: (id: string) => void;
+  saveNodeAsComponent: (id: string, name?: string) => void;
+  syncComponentFromNode: (id: string) => void;
+  detachComponent: (id: string) => void;
+  deleteComponent: (componentId: string) => void;
   loadProject: (project: BuilderProject) => void;
   reset: () => void;
 };
@@ -81,6 +112,26 @@ export const useBuilder = create<State>((set, get) => ({
   setProjectDescription: description => set(s => commit(s, { ...s.project, description })),
   addProjectAsset: asset => set(s => commit(s, { ...s.project, assets: [...s.project.assets.filter(a => a.id !== asset.id), asset] })),
   removeProjectAsset: assetId => set(s => commit(s, { ...s.project, assets: s.project.assets.filter(a => a.id !== assetId) })),
+  setTheme: theme => set(s => commit(s, { ...s.project, theme: structuredClone(theme) })),
+  restyleCurrentPage: () => set(s => {
+    const theme = s.project.theme;
+    const restyle = (nodes: BuilderNode[]): BuilderNode[] => nodes.map(node => {
+      const next = { ...node, style: { ...node.style }, children: node.children ? restyle(node.children) : node.children };
+      if (node.type === "section") { next.style.background = "var(--nw-background)"; next.style.color = "var(--nw-text)"; }
+      if (["card","container","form","modal","tabs","accordion","table"].includes(node.type)) { if (node.style.background !== "transparent") next.style.background = "var(--nw-surface)"; next.style.borderColor = "var(--nw-border)"; }
+      if (node.type === "heading") next.style.color = "var(--nw-text)";
+      if (["text","label","list"].includes(node.type)) next.style.color = "var(--nw-muted)";
+      if (node.type === "button") { next.style.background = "var(--nw-primary)"; next.style.color = "var(--nw-primary-text)"; }
+      if (node.type === "link") next.style.color = "var(--nw-primary)";
+      if (node.style.borderRadius && node.style.borderRadius !== "0px") next.style.borderRadius = "var(--nw-radius)";
+      if (node.style.boxShadow && node.style.boxShadow !== "none") next.style.boxShadow = "var(--nw-shadow)";
+      return next;
+    });
+    const pages = s.project.pages.map(page => page.id === s.project.activePageId ? { ...page, nodes: restyle(page.nodes) } : page);
+    return commit(s, { ...s.project, pages, theme });
+  }),
+  addImportedBlock: block => set(s => commit(s, { ...s.project, importedBlocks: [...s.project.importedBlocks.filter(item => item.id !== block.id), block] })),
+  deleteImportedBlock: blockId => set(s => commit(s, { ...s.project, importedBlocks: s.project.importedBlocks.filter(item => item.id !== blockId) })),
 
   undo: () => set(s => {
     const previous = s.past.at(-1); if (!previous) return s;
@@ -155,34 +206,53 @@ export const useBuilder = create<State>((set, get) => ({
     const node = getNodeAnywhere(get().project, id); if (node) set({ clipboard: cloneNode(node) });
   },
   pasteNode: (parentId = null) => { const clip = get().clipboard; if (clip) get().addNode(cloneNode(clip), parentId); },
-  syncSymbolInstances: id => set(s => {
+  saveNodeAsComponent: (id, name) => set(s => {
     const source = getNodeAnywhere(s.project, id);
-    if (!source || source.type !== "symbol") return s;
-    const syncKey = source.symbolSyncKey || uid("symbol-sync");
-    const sourceWithKey: BuilderNode = { ...source, symbolSyncKey: syncKey };
-    const syncTree = (nodes: BuilderNode[]): BuilderNode[] => nodes.map(node => {
-      if (node.id === source.id) return sourceWithKey;
-      const sameSymbol = node.type === "symbol" && ((node.symbolSyncKey && node.symbolSyncKey === syncKey) || (!node.symbolSyncKey && node.componentName === source.componentName));
-      if (sameSymbol) {
-        return {
-          ...node,
-          componentName: source.componentName,
-          symbolSyncKey: syncKey,
-          style: structuredClone(source.style),
-          responsive: structuredClone(source.responsive || {}),
-          hiddenOn: structuredClone(source.hiddenOn || {}),
-          animation: source.animation,
-          hoverAnimation: source.hoverAnimation,
-          animationDuration: source.animationDuration,
-          animationDelay: source.animationDelay,
-          children: source.children?.map(cloneNode)
-        };
-      }
-      return { ...node, children: node.children ? syncTree(node.children) : node.children };
-    });
-    const pages = s.project.pages.map(page => ({ ...page, nodes: syncTree(page.nodes) }));
-    return commit(s, { ...s.project, pages }, { selectedId: id });
+    if (!source) return s;
+    const now = new Date().toISOString();
+    const componentId = source.componentId || uid("component");
+    const componentName = (name || source.componentName || source.name || "Component").trim();
+    const definition: SavedComponent = { id: componentId, name: componentName, node: componentTemplate(source), createdAt: now, updatedAt: now };
+    const components = [...s.project.components.filter(item => item.id !== componentId), definition];
+    let project = { ...s.project, components };
+    if (findNode([project.globalNavbar], id)) project = { ...project, globalNavbar: mapNode([project.globalNavbar], id, n => ({ ...n, componentId, componentName }))[0] };
+    else if (findNode([project.globalFooter], id)) project = { ...project, globalFooter: mapNode([project.globalFooter], id, n => ({ ...n, componentId, componentName }))[0] };
+    else project = { ...project, pages: project.pages.map(page => ({ ...page, nodes: mapNode(page.nodes, id, n => ({ ...n, componentId, componentName })) })) };
+    return commit(s, project);
   }),
+  syncComponentFromNode: id => set(s => {
+    const source = getNodeAnywhere(s.project, id);
+    if (!source?.componentId) return s;
+    const componentId = source.componentId;
+    const template = componentTemplate(source);
+    const existing = s.project.components.find(item => item.id === componentId);
+    const now = new Date().toISOString();
+    const component: SavedComponent = { id: componentId, name: source.componentName || existing?.name || source.name, node: template, createdAt: existing?.createdAt || now, updatedAt: now };
+    const project = {
+      ...s.project,
+      components: [...s.project.components.filter(item => item.id !== componentId), component],
+      globalNavbar: replaceComponentInstances([s.project.globalNavbar], componentId, template)[0],
+      globalFooter: replaceComponentInstances([s.project.globalFooter], componentId, template)[0],
+      pages: s.project.pages.map(page => ({ ...page, nodes: replaceComponentInstances(page.nodes, componentId, template) }))
+    };
+    return commit(s, project, { selectedId: id });
+  }),
+  detachComponent: id => set(s => {
+    const source = getNodeAnywhere(s.project, id);
+    if (!source?.componentId) return s;
+    let project = s.project;
+    if (findNode([project.globalNavbar], id)) project = { ...project, globalNavbar: mapNode([project.globalNavbar], id, n => ({ ...n, componentId: undefined }))[0] };
+    else if (findNode([project.globalFooter], id)) project = { ...project, globalFooter: mapNode([project.globalFooter], id, n => ({ ...n, componentId: undefined }))[0] };
+    else project = { ...project, pages: project.pages.map(page => ({ ...page, nodes: mapNode(page.nodes, id, n => ({ ...n, componentId: undefined })) })) };
+    return commit(s, project);
+  }),
+  deleteComponent: componentId => set(s => commit(s, {
+    ...s.project,
+    components: s.project.components.filter(item => item.id !== componentId),
+    globalNavbar: detachComponentInstances([s.project.globalNavbar], componentId)[0],
+    globalFooter: detachComponentInstances([s.project.globalFooter], componentId)[0],
+    pages: s.project.pages.map(page => ({ ...page, nodes: detachComponentInstances(page.nodes, componentId) }))
+  })),
   loadProject: project => { const normalized = normalizeProject(project as BuilderProject & Record<string, unknown>); persist(normalized); set({ project: normalized, selectedId: null, past: [], future: [] }); },
   reset: () => {
     const current = get().project;

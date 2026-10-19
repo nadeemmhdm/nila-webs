@@ -98,7 +98,11 @@ Interactive: Tabs, Accordion and Modal.
 
 Components: Component Symbol container for grouping reusable UI.
 
+## Phase 3 engine status
 
-## Phase 3 native element coverage — v0.5.0
+The generic element engine is complete in v0.5.0, including form semantics, accessibility, interactive components, advanced media/data blocks and linked reusable project components. Phase 4 continues adapting the remaining supplied ShadcnSpace block families as visual section/template adapters.
 
-Phase 3 is complete for the general-purpose element system. Native builder/runtime/export support now covers links, badges, lists, advanced inputs and validation, checkbox/radio/switch/range/file controls, embeds, maps, sandboxed HTML, tables, tabs, accordions, modals, carousels, social links and synced component symbols. The ShadcnSpace-specific block families listed above remain Phase 4 block/template-engine work.
+
+## Phase 4 prompt adapter
+
+Nila Webs v0.6.0 indexes 78 variants from the supplied prompt/code bundle. Every catalog card can create an editable native node tree; prompt/TSX text can also be imported at runtime from the new Import activity. The importer extracts user-facing copy, image/video URLs, interactive family hints and motion signals and does not execute arbitrary pasted JavaScript.

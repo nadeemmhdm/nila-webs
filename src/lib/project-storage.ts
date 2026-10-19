@@ -1,6 +1,7 @@
 import type { BuilderPage, BuilderProject, ProjectSummary } from "../types";
 import { uid } from "./nodes";
 import { createDefaultFooter, createDefaultNavbar, siteTemplateLibrary } from "../templates/library";
+import { defaultTheme } from "../templates/themes";
 
 const INDEX_KEY = "nila-webs-project-index-v1";
 const ACTIVE_KEY = "nila-webs-active-project-v1";
@@ -22,9 +23,12 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
     globalNavbar: raw.globalNavbar || createDefaultNavbar(),
     globalFooter: raw.globalFooter || createDefaultFooter(),
     assets: Array.isArray(raw.assets) ? raw.assets : [],
+    components: Array.isArray(raw.components) ? raw.components : [],
+    importedBlocks: Array.isArray(raw.importedBlocks) ? raw.importedBlocks : [],
+    theme: raw.theme && typeof raw.theme === "object" ? raw.theme : structuredClone(defaultTheme),
     createdAt,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : createdAt,
-    schemaVersion: 3
+    schemaVersion: 5
   };
   return project;
 }
@@ -36,8 +40,8 @@ export function createProjectModel(name = "Untitled Project", description = "", 
   const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes, showNavbar: true, showFooter: true };
   return {
     id: uid("project"), name: name.trim() || "Untitled Project", description: description.trim(), templateId,
-    pages: [home], activePageId: home.id, globalNavbar: createDefaultNavbar(), globalFooter: createDefaultFooter(), assets: [],
-    createdAt: now, updatedAt: now, schemaVersion: 3
+    pages: [home], activePageId: home.id, globalNavbar: createDefaultNavbar(), globalFooter: createDefaultFooter(), assets: [], components: [], importedBlocks: [], theme: structuredClone(defaultTheme),
+    createdAt: now, updatedAt: now, schemaVersion: 5
   };
 }
 

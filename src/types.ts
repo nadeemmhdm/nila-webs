@@ -4,7 +4,8 @@ export type NodeType =
   | "section" | "container" | "card" | "form"
   | "heading" | "text" | "button" | "image" | "video" | "icon"
   | "input" | "textarea" | "select" | "label" | "checkbox" | "radio" | "switch" | "range" | "file"
-  | "link" | "badge" | "list" | "embed" | "map" | "html" | "table" | "tabs" | "accordion" | "modal" | "carousel" | "socials" | "symbol"
+  | "link" | "badge" | "list" | "embed" | "map" | "table" | "tabs" | "accordion" | "modal" | "carousel" | "socials" | "symbol"
+  | "html" | "code" | "alert" | "avatar" | "progress" | "breadcrumb" | "rating"
   | "spacer" | "divider" | "navbar" | "footer";
 
 export type AnimationName =
@@ -12,9 +13,18 @@ export type AnimationName =
   | "zoom-in" | "float" | "pulse" | "bounce-soft";
 
 export type HoverAnimation = "none" | "lift" | "scale" | "glow" | "tilt";
-
-export type InputType = "text" | "email" | "password" | "number" | "date" | "datetime-local" | "tel" | "url" | "search";
+export type InputKind = "text" | "email" | "password" | "number" | "date" | "datetime-local" | "time" | "tel" | "url" | "search";
+export type InputType = InputKind;
 export type ListStyle = "disc" | "decimal" | "none";
+export type FormMethod = "get" | "post";
+
+export interface ThemeColors {
+  background: string; surface: string; surfaceAlt: string; text: string; muted: string; primary: string; primaryText: string; secondary: string; border: string; success: string; warning: string; danger: string;
+}
+export interface ProjectTheme {
+  id: string; name: string; colors: ThemeColors; typography: { body: string; heading: string }; radius: string; shadow: string;
+}
+
 
 export interface NodeStyle {
   background: string;
@@ -50,7 +60,6 @@ export interface NodeResponsiveStyle {
   mobile?: Partial<NodeStyle>;
 }
 
-
 export interface InteractiveItem {
   title: string;
   body: string;
@@ -59,6 +68,7 @@ export interface InteractiveItem {
 export interface TableModel {
   headers: string[];
   rows: string[][];
+  caption?: string;
 }
 
 export interface CarouselSlide {
@@ -87,24 +97,30 @@ export interface BuilderNode {
   required?: boolean;
   value?: string;
   nameAttr?: string;
+  inputType?: InputKind;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  rows?: number;
+  accept?: string;
+  multiple?: boolean;
+  autocomplete?: string;
   min?: number;
   max?: number;
   step?: number;
+  formAction?: string;
+  formMethod?: FormMethod;
   items?: InteractiveItem[];
   table?: TableModel;
   slides?: CarouselSlide[];
   links?: SocialLink[];
   componentName?: string;
+  componentId?: string;
+  /** Legacy Phase 3 linked-symbol key; retained for project compatibility. */
   symbolSyncKey?: string;
-  inputType?: InputType;
-  pattern?: string;
-  minLength?: number;
-  maxLength?: number;
-  accept?: string;
-  multiple?: boolean;
-  ariaLabel?: string;
-  titleAttr?: string;
+  /** Sandboxed custom HTML source. */
   html?: string;
+  /** Legacy list/table/modal/carousel properties retained for migrated projects. */
   listStyle?: ListStyle;
   tableStriped?: boolean;
   tableCompact?: boolean;
@@ -114,6 +130,16 @@ export interface BuilderNode {
   carouselInterval?: number;
   carouselShowDots?: boolean;
   carouselShowArrows?: boolean;
+  autoplay?: boolean;
+  interval?: number;
+  showDots?: boolean;
+  closeOnBackdrop?: boolean;
+  defaultIndex?: number;
+  ordered?: boolean;
+  ariaLabel?: string;
+  titleAttr?: string;
+  roleAttr?: string;
+  tabIndex?: number;
   animation?: AnimationName;
   hoverAnimation?: HoverAnimation;
   animationDuration?: number;
@@ -123,6 +149,29 @@ export interface BuilderNode {
   hiddenOn?: Partial<Record<Viewport, boolean>>;
   children?: BuilderNode[];
   meta?: Record<string, string | number | boolean>;
+}
+
+export interface ImportedBlock {
+  id: string;
+  name: string;
+  group: string;
+  node: BuilderNode;
+  createdAt: string;
+  updatedAt: string;
+  sourceKind: "prompt-code" | "catalog";
+  /** Original prompt/code retained so the block can be re-converted later. */
+  source?: string;
+  dependencies?: string[];
+  detectedKind?: string;
+  animated?: boolean;
+}
+
+export interface SavedComponent {
+  id: string;
+  name: string;
+  node: BuilderNode;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BuilderPage {
@@ -159,9 +208,12 @@ export interface BuilderProject {
   globalNavbar: BuilderNode;
   globalFooter: BuilderNode;
   assets: ProjectAsset[];
+  components: SavedComponent[];
+  importedBlocks: ImportedBlock[];
+  theme: ProjectTheme;
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 3;
+  schemaVersion: 5;
 }
 
 export interface ProjectSummary {
