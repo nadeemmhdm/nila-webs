@@ -44,9 +44,12 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release/windows | Out-Null
-          Get-ChildItem -Recurse src-tauri/target/release/bundle -Include *.exe,*.msi | ForEach-Object { Copy-Item $_.FullName release/windows/ }
-          $count=(Get-ChildItem release/windows -Include *.exe,*.msi).Count
-          if ($count -lt 2) { throw "Expected both EXE and MSI installers, found $count" }
+          $installers = Get-ChildItem -Recurse src-tauri/target/release/bundle -File | Where-Object { $_.Extension -in '.exe', '.msi' }
+          $installers | ForEach-Object { Copy-Item $_.FullName release/windows/ }
+          $collected = @(Get-ChildItem release/windows -File | Where-Object { $_.Extension -in '.exe', '.msi' })
+          $exeCount = @($collected | Where-Object { $_.Extension -eq '.exe' }).Count
+          $msiCount = @($collected | Where-Object { $_.Extension -eq '.msi' }).Count
+          if ($exeCount -lt 1 -or $msiCount -lt 1) { throw "Expected at least one EXE and one MSI installer; found EXE=$exeCount MSI=$msiCount" }
       - name: Sign installers when certificate is configured
         shell: pwsh
         env:
@@ -58,11 +61,11 @@ jobs:
           [IO.File]::WriteAllBytes($pfx,[Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_BASE64))
           $signtool=(Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe' | Sort-Object FullName -Descending | Select-Object -First 1).FullName
           if (-not $signtool) { throw 'signtool.exe not found' }
-          Get-ChildItem release/windows -Include *.exe,*.msi | ForEach-Object { & $signtool sign /f $pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $_.FullName; if ($LASTEXITCODE -ne 0) { throw "Signing failed: $($_.Name)" } }
+          Get-ChildItem release/windows -File | Where-Object { $_.Extension -in '.exe', '.msi' } | ForEach-Object { & $signtool sign /f $pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $_.FullName; if ($LASTEXITCODE -ne 0) { throw "Signing failed: $($_.Name)" } }
       - name: Generate SHA256 checksums
         shell: pwsh
         run: |
-          Get-ChildItem release/windows -Include *.exe,*.msi | ForEach-Object { $h=Get-FileHash $_.FullName -Algorithm SHA256; "$($h.Hash.ToLower())  $($_.Name)" } | Set-Content release/windows/SHA256SUMS.txt
+          Get-ChildItem release/windows -File | Where-Object { $_.Extension -in '.exe', '.msi' } | ForEach-Object { $h=Get-FileHash $_.FullName -Algorithm SHA256; "$($h.Hash.ToLower())  $($_.Name)" } | Set-Content release/windows/SHA256SUMS.txt
       - name: Upload Windows installers
         uses: actions/upload-artifact@v4
         with:
