@@ -1,57 +1,14 @@
-name: Apply Phase 7 Complete
+name: Phase 7 Apply (Retired)
 
 on:
-  push:
-    paths:
-      - 'p7patch.part.*'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Reconstruct and apply Phase 7
-        run: |
-          cat p7patch.part.* > /tmp/p7.b64
-          base64 -d /tmp/p7.b64 > /tmp/p7.patch.gz
-          echo "883c5837fb7da1b547ff58a36a948f454b65cf5a9a902f569c7fe34654d070d8  /tmp/p7.patch.gz" | sha256sum -c -
-          gzip -t /tmp/p7.patch.gz
-          gzip -dc /tmp/p7.patch.gz > /tmp/p7.patch
-          git apply --check /tmp/p7.patch
-          git apply /tmp/p7.patch
-          rm -f p7patch.part.*
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Verify Phase 3 compatibility
-        run: npm run verify:phase3
-      - name: Verify Phase 4 engine
-        run: npm run verify:phase4
-      - name: Verify Phase 4 final scope
-        run: npm run verify:phase4-final
-      - name: Verify Phase 5 responsive system
-        run: npm run verify:phase5
-      - name: Verify Phase 6 motion studio
-        run: npm run verify:phase6
-      - name: Verify Phase 7 navigation forms and SEO
-        run: npm run verify:phase7
-      - name: Regression gate
-        run: npm run check:phase3
-      - name: Production build
-        run: npm run build
-      - name: Commit Phase 7 final source
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat: complete phase 7 navigation forms and seo"
-          git push origin HEAD:main
+      - name: Retired
+        run: echo "Phase 6 and Phase 7 final sources are applied and validated. This workflow is retained only for audit history."
