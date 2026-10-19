@@ -1,0 +1,37 @@
+name: Apply Phase 4 Final
+
+on:
+  push:
+    paths:
+      - 'phase4final.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct and apply Phase 4
+        run: |
+          cat phase4part.* > /tmp/phase4.b64
+          base64 -d /tmp/phase4.b64 | gzip -d > /tmp/phase4.patch
+          git apply --check /tmp/phase4.patch
+          git apply /tmp/phase4.patch
+          rm -f phase4part.* phase4final.trigger .github/workflows/apply-phase4-final.yml
+          rm -f phase3fin.part.* phase3final.trigger .github/workflows/apply-phase3-final.yml
+      - name: Verify source before commit
+        run: |
+          node scripts/verify-phase3.mjs
+          node scripts/verify-phase4.mjs
+      - name: Commit Phase 4 milestone
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: complete phase 3 and start phase 4 prompt adapter"
+          git push origin HEAD:main
