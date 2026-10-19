@@ -29,6 +29,10 @@ jobs:
         run: npm run verify:phase4-final
       - name: Verify Phase 5 responsive system
         run: npm run verify:phase5
+      - name: Verify Phase 6 motion studio
+        run: npm run verify:phase6
+      - name: Verify Phase 7 navigation forms and SEO
+        run: npm run verify:phase7
       - name: Phase 3 regression gate
         run: npm run check:phase3
       - name: Build editor
