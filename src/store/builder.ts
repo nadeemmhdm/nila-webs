@@ -1,29 +1,14 @@
 import { create } from "zustand";
-import type { BuilderNode, BuilderPage, BuilderProject, NodeStyle, Viewport } from "../types";
+import type { BuilderNode, BuilderPage, BuilderProject, NodeStyle, ProjectAsset, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
-import { createDefaultFooter, createDefaultNavbar } from "../templates/library";
+import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
 
-const STORAGE = "nila-webs-project-v2";
 const HISTORY_LIMIT = 60;
-
-const initialProject = (): BuilderProject => {
-  const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true };
-  return {
-    id: uid("project"), name: "Nila Webs Site", pages: [home], activePageId: home.id,
-    globalNavbar: createDefaultNavbar(), globalFooter: createDefaultFooter(),
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), schemaVersion: 2
-  };
-};
-
-const normalizeProject = (raw: BuilderProject): BuilderProject => ({ ...raw, schemaVersion: 2, name: raw.name || "Nila Webs Site" });
-const load = (): BuilderProject => {
-  try { const saved = localStorage.getItem(STORAGE); return saved ? normalizeProject(JSON.parse(saved)) : initialProject(); }
-  catch { return initialProject(); }
-};
-const persist = (project: BuilderProject) => localStorage.setItem(STORAGE, JSON.stringify({ ...project, updatedAt: new Date().toISOString() }));
+const load = (): BuilderProject => loadInitialProject();
+const persist = (project: BuilderProject) => saveProject(project);
 const snapshot = (project: BuilderProject) => structuredClone(project);
 
-export type SidebarTab = "pages" | "library" | "layers";
+export type SidebarTab = "pages" | "library" | "layers" | "assets";
 
 type State = {
   project: BuilderProject;
@@ -46,6 +31,9 @@ type State = {
   toggleRight: () => void;
   setSidebarTab: (tab: SidebarTab) => void;
   setProjectName: (name: string) => void;
+  setProjectDescription: (description: string) => void;
+  addProjectAsset: (asset: ProjectAsset) => void;
+  removeProjectAsset: (assetId: string) => void;
   undo: () => void;
   redo: () => void;
 
@@ -89,6 +77,9 @@ export const useBuilder = create<State>((set, get) => ({
   toggleRight: () => set(s => ({ rightCollapsed: !s.rightCollapsed })),
   setSidebarTab: sidebarTab => set({ sidebarTab, leftCollapsed: false }),
   setProjectName: name => set(s => commit(s, { ...s.project, name })),
+  setProjectDescription: description => set(s => commit(s, { ...s.project, description })),
+  addProjectAsset: asset => set(s => commit(s, { ...s.project, assets: [...s.project.assets.filter(a => a.id !== asset.id), asset] })),
+  removeProjectAsset: assetId => set(s => commit(s, { ...s.project, assets: s.project.assets.filter(a => a.id !== assetId) })),
 
   undo: () => set(s => {
     const previous = s.past.at(-1); if (!previous) return s;
@@ -163,8 +154,13 @@ export const useBuilder = create<State>((set, get) => ({
     const node = getNodeAnywhere(get().project, id); if (node) set({ clipboard: cloneNode(node) });
   },
   pasteNode: (parentId = null) => { const clip = get().clipboard; if (clip) get().addNode(cloneNode(clip), parentId); },
-  loadProject: project => { const normalized = normalizeProject(project); persist(normalized); set({ project: normalized, selectedId: null, past: [], future: [] }); },
-  reset: () => { const project = initialProject(); persist(project); set({ project, selectedId: null, past: [], future: [] }); }
+  loadProject: project => { const normalized = normalizeProject(project as BuilderProject & Record<string, unknown>); persist(normalized); set({ project: normalized, selectedId: null, past: [], future: [] }); },
+  reset: () => {
+    const current = get().project;
+    const fresh = createProjectModel(current.name, current.description || "", "blank");
+    const project: BuilderProject = { ...fresh, id: current.id, createdAt: current.createdAt };
+    persist(project); set({ project, selectedId: null, past: [], future: [] });
+  }
 }));
 
 export function getNodeAnywhere(project: BuilderProject, id: string): BuilderNode | undefined {

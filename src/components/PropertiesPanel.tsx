@@ -1,8 +1,10 @@
+import { useRef } from "react";
 import type { ReactNode } from "react";
-import { ClipboardCopy, Copy, Eye, EyeOff, Trash2 } from "lucide-react";
+import { ClipboardCopy, Copy, Eye, EyeOff, FolderOpen, Link2, Trash2, Upload } from "lucide-react";
 import { getNodeAnywhere, useBuilder } from "../store/builder";
-import type { AnimationName, HoverAnimation, NodeStyle } from "../types";
+import type { AnimationName, AssetKind, BuilderNode, HoverAnimation, NodeStyle } from "../types";
 import { resolveStyle } from "../lib/nodes";
+import { createUploadedAsset } from "../lib/assets";
 
 const sizeFields: Array<[keyof NodeStyle, string]> = [["width","Width"],["maxWidth","Max width"],["height","Height"],["minHeight","Min height"]];
 const spacingFields: Array<[keyof NodeStyle, string]> = [["padding","Padding"],["margin","Margin"],["gap","Gap"]];
@@ -20,7 +22,7 @@ export default function PropertiesPanel() {
 
     <PropertySection title="Content">
       {["heading","text","button","label","icon"].includes(node.type) && <Field label="Text"><textarea value={node.content || ""} onChange={e => set("content", e.target.value)}/></Field>}
-      {["image","video"].includes(node.type) && <Field label="Source URL"><textarea value={node.src || ""} onChange={e => set("src", e.target.value)}/></Field>}
+      {["image","video"].includes(node.type) && <MediaSourceEditor node={node}/>}
       {node.type === "image" && <Field label="Alt text"><input value={node.alt || ""} onChange={e => set("alt", e.target.value)}/></Field>}
       {["input","textarea"].includes(node.type) && <Field label="Placeholder"><input value={node.placeholder || ""} onChange={e => set("placeholder", e.target.value)}/></Field>}
       {node.type === "select" && <Field label="Options"><textarea value={(node.options || []).join("\n")} onChange={e => set("options", e.target.value.split("\n").filter(Boolean))}/></Field>}
@@ -33,7 +35,7 @@ export default function PropertiesPanel() {
       <Field label="Visible"><label className="toggle-line"><input type="checkbox" checked={!node.hiddenOn?.[viewport]} onChange={e => setNodeHidden(node.id, viewport, !e.target.checked)}/><span>{node.hiddenOn?.[viewport] ? "Hidden" : "Shown"}</span></label></Field>
       {sizeFields.map(([key,label]) => <StyleInput key={key} label={label} value={String(style[key])} onChange={v => updateStyle(node.id,{ [key]: v })}/>)}
       <Field label="Display"><select value={style.display} onChange={e => updateStyle(node.id,{ display:e.target.value as NodeStyle["display"] })}><option>block</option><option>flex</option><option>grid</option></select></Field>
-      {style.display === "grid" && <StyleInput label="Grid columns" value={style.gridColumns} onChange={v => updateStyle(node.id,{gridColumns:v})}/>} 
+      {style.display === "grid" && <StyleInput label="Grid columns" value={style.gridColumns} onChange={v => updateStyle(node.id,{gridColumns:v})/>} 
       {style.display === "flex" && <><Field label="Direction"><select value={style.flexDirection} onChange={e => updateStyle(node.id,{flexDirection:e.target.value as NodeStyle["flexDirection"]})}><option>column</option><option>row</option></select></Field><Field label="Justify"><select value={style.justifyContent} onChange={e => updateStyle(node.id,{justifyContent:e.target.value as NodeStyle["justifyContent"]})}><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option><option value="space-between">Space between</option><option value="space-around">Space around</option></select></Field><Field label="Align"><select value={style.alignItems} onChange={e => updateStyle(node.id,{alignItems:e.target.value as NodeStyle["alignItems"]})}><option>stretch</option><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option></select></Field></>}
       {spacingFields.map(([key,label]) => <StyleInput key={key} label={label} value={String(style[key])} onChange={v => updateStyle(node.id,{ [key]: v })}/>)}
     </PropertySection>
@@ -68,3 +70,29 @@ function safeColor(value:string,fallback:string){return /^#[0-9a-f]{6}$/i.test(v
 function PropertySection({title,children}:{title:string;children:ReactNode}){return <section className="property-section"><h3>{title}</h3>{children}</section>}
 function Field({label,children}:{label:string;children:ReactNode}){return <label className="property-field"><span>{label}</span><div>{children}</div></label>}
 function StyleInput({label,value,onChange}:{label:string;value:string;onChange:(v:string)=>void}){return <Field label={label}><input value={value} onChange={e => onChange(e.target.value)}/></Field>}
+
+function MediaSourceEditor({ node }: { node: BuilderNode }) {
+  const { project, updateNode, addProjectAsset, setSidebarTab } = useBuilder();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const kind = node.type as AssetKind;
+  const assets = project.assets.filter(asset => asset.kind === kind);
+  const currentAssetId = node.src?.startsWith("asset://") ? node.src.slice("asset://".length) : "";
+  const upload = async (file?: File) => {
+    if (!file) return;
+    const expected = kind === "image" ? file.type.startsWith("image/") : file.type.startsWith("video/");
+    if (!expected) { alert(`Choose a ${kind} file.`); return; }
+    const asset = await createUploadedAsset(project.id, file, kind);
+    addProjectAsset(asset);
+    updateNode(node.id, { src: `asset://${asset.id}` });
+    if (fileRef.current) fileRef.current.value = "";
+  };
+  return <>
+    <Field label="Media">
+      <div className="media-source-actions"><button type="button" onClick={() => fileRef.current?.click()}><Upload size={12}/>Upload</button><button type="button" onClick={() => setSidebarTab("assets")}><FolderOpen size={12}/>Assets</button></div>
+      <input ref={fileRef} hidden type="file" accept={kind === "image" ? "image/*" : "video/*"} onChange={e => upload(e.target.files?.[0])}/>
+    </Field>
+    {!!assets.length && <Field label="Project asset"><select value={currentAssetId} onChange={e => e.target.value && updateNode(node.id,{src:`asset://${e.target.value}`})}><option value="">Choose asset…</option>{assets.map(asset => <option key={asset.id} value={asset.id}>{asset.name}</option>)}</select></Field>}
+    <Field label="External URL"><div className="media-url-row"><Link2 size={12}/><input value={node.src?.startsWith("asset://") ? "" : (node.src || "")} onChange={e => updateNode(node.id,{src:e.target.value})} placeholder={`https://…/${kind === "image" ? "image.jpg" : "video.mp4"}`}/></div></Field>
+    {currentAssetId && <div className="source-detail"><span>Selected asset</span><code>{assets.find(a => a.id === currentAssetId)?.name || currentAssetId}</code></div>}
+  </>;
+}

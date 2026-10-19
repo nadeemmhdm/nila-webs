@@ -3,6 +3,7 @@ import { GripVertical } from "lucide-react";
 import type { BuilderNode } from "../types";
 import { resolveStyle } from "../lib/nodes";
 import { useBuilder } from "../store/builder";
+import { useAssetSource } from "../hooks/useAssetSource";
 
 const toCss = (s: BuilderNode["style"]): CSSProperties => ({
   background: s.background, color: s.color, width: s.width, maxWidth: s.maxWidth, height: s.height, minHeight: s.minHeight,
@@ -16,7 +17,8 @@ const toCss = (s: BuilderNode["style"]): CSSProperties => ({
 const canNest = (node: BuilderNode) => ["container", "section", "card", "form", "navbar", "footer"].includes(node.type);
 
 export default function NodeRenderer({ node, readOnly = false }: { node: BuilderNode; readOnly?: boolean }) {
-  const { selectedId, setSelected, addNode, moveNode, viewport } = useBuilder();
+  const { project, selectedId, setSelected, addNode, moveNode, viewport } = useBuilder();
+  const mediaSrc = useAssetSource(project, node.src);
   const selected = selectedId === node.id;
   if (node.hiddenOn?.[viewport]) return readOnly ? null : <div className={`hidden-node ${selected ? "selected" : ""}`} onClick={e => { e.stopPropagation(); setSelected(node.id); }}>Hidden on {viewport}: {node.name}</div>;
   const style = toCss(resolveStyle(node, viewport));
@@ -43,8 +45,8 @@ export default function NodeRenderer({ node, readOnly = false }: { node: Builder
     case "heading": return wrap(<h1 {...common}>{node.content}</h1>);
     case "text": return wrap(<p {...common}>{node.content}</p>);
     case "button": return wrap(<a {...common} href={readOnly ? node.href : undefined} target={node.target} rel={node.target === "_blank" ? "noreferrer" : undefined}>{node.content}</a>);
-    case "image": return wrap(<img {...common} src={node.src} alt={node.alt || ""} style={{ ...common.style, objectFit: "cover" }}/>);
-    case "video": return wrap(<video {...common} src={node.src} controls={readOnly} muted loop playsInline style={{ ...common.style, objectFit: "cover" }}/>);
+    case "image": return wrap(<img {...common} src={mediaSrc} alt={node.alt || ""} style={{ ...common.style, objectFit: "cover" }}/>);
+    case "video": return wrap(<video {...common} src={mediaSrc} controls={readOnly} muted loop playsInline style={{ ...common.style, objectFit: "cover" }}/>);
     case "icon": return wrap(<span {...common}>{node.content || "✦"}</span>);
     case "input": return wrap(<input {...common} placeholder={node.placeholder} readOnly={!readOnly}/>);
     case "textarea": return wrap(<textarea {...common} placeholder={node.placeholder} readOnly={!readOnly}/>);

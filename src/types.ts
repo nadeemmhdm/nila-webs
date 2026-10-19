@@ -77,16 +77,45 @@ export interface BuilderPage {
   showFooter: boolean;
 }
 
+export type AssetKind = "image" | "video";
+export type AssetSource = "upload" | "url";
+
+export interface ProjectAsset {
+  id: string;
+  name: string;
+  fileName: string;
+  kind: AssetKind;
+  source: AssetSource;
+  url?: string;
+  mimeType?: string;
+  size?: number;
+  createdAt: string;
+}
+
 export interface BuilderProject {
   id: string;
   name: string;
+  description?: string;
+  templateId?: string;
   pages: BuilderPage[];
   activePageId: string;
   globalNavbar: BuilderNode;
   globalFooter: BuilderNode;
+  assets: ProjectAsset[];
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 2;
+  schemaVersion: 3;
+}
+
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  description?: string;
+  templateId?: string;
+  createdAt: string;
+  updatedAt: string;
+  pageCount: number;
+  assetCount: number;
 }
 
 export interface LibraryItem {
