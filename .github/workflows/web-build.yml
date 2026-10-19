@@ -33,10 +33,12 @@ jobs:
         run: npm run verify:phase6
       - name: Verify Phase 7 navigation forms and SEO
         run: npm run verify:phase7
-      - name: Verify Phase 8 quality center
+      - name: Verify Phase 8 quality and recovery
         run: npm run verify:phase8
       - name: Verify real React Vite export
         run: npm run verify:react-export
+      - name: Verify Phase 9 production export
+        run: npm run verify:phase9
       - name: Phase 3 regression gate
         run: npm run check:phase3
       - name: Build editor
