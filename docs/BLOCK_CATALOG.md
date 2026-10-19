@@ -1,0 +1,85 @@
+# Supplied Block Catalog
+
+This file tracks block families detected in the user-supplied ShadcnSpace prompt bundle. Native adapters already implemented in `src/templates/library.ts` are only the first subset; later phases will add the remaining stateful components through typed adapters.
+
+## Detected entries
+
+- Pricing 1
+- Pricing 2
+- Portfolio  1
+- Feature   1
+- Feature  2
+- about 1
+- team 1
+- nav bar 1
+- Testimonial 1
+- Services 1
+- Services 2
+- cta 1
+- cta 2
+- contact 1
+- faq 1
+- blog 1
+- blog 2
+- footer 1
+- footer 2
+- newsletter 1
+- logo cloud 1
+- gallery 1
+- Bento Grid 1
+- Bento Grid 2
+- biolink 1
+- download 1
+- waitlist 1
+- login 1
+- register 1
+- mutifactor Authentication 1
+- verify email1
+- time line 1
+- time line 2
+- time line 3
+- Cookie Consent 01
+- Accordion 1
+- Accordion 2
+- Accordion 3
+- Accordion 4
+- Accordion 5
+- Accordion 6
+- Accordion 5
+- alret 1
+- alert 2
+- alert 3
+- alert 4
+- alret 5
+- alret 6
+- alret 7
+- Animated List  1
+- Animated List  2
+- Animated List  3
+- animated text 1
+- animated text  2
+- animated text  3
+- animated text 4
+- animated text  5
+- animated text  6
+- animated text  7
+- animated text  8
+- animated text 9
+- animated text  10
+- animated text  11
+- animated test 12
+- Apple Dock 01
+- Autocomplete  1
+- Autocomplete  2
+- Autocomplete  3
+- Autocomplete 4
+- Autocomplete  5
+- Autocomplete  6
+- Autocomplete  7
+- Avatar  1
+- Avatar 2
+- Avatar  3
+- Avatar  4
+- Avatar  5
+- Avatar  6
+- Avatar  7
