@@ -1,0 +1,31 @@
+name: Apply Phase 3 Patch
+
+on:
+  push:
+    paths:
+      - 'phase3.patch.gz.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply Phase 3 source update
+        run: |
+          base64 -d phase3.patch.gz.b64 | gzip -d > /tmp/phase3.patch
+          git apply --check /tmp/phase3.patch
+          git apply /tmp/phase3.patch
+          rm phase3.patch.gz.b64
+      - name: Commit Phase 3
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: start phase 3 advanced element system"
+          git push origin HEAD:main
