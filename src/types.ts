@@ -66,6 +66,16 @@ export interface NodeResponsiveStyle {
   mobile?: Partial<NodeStyle>;
 }
 
+export interface DesignSystem {
+  breakpoints: { mobileMax:number; tabletMax:number; previewDesktop:number; previewTablet:number; previewMobile:number };
+  containerMaxWidth: string;
+  contentPadding: Record<Viewport,string>;
+  spacing: { xs:string; sm:string; md:string; lg:string; xl:string; xxl:string };
+  typography: { xs:string; sm:string; base:string; lg:string; xl:string; xxl:string; display:string };
+  autoResponsive: boolean;
+  reducedMotion: boolean;
+}
+
 export interface InteractiveItem { title: string; body: string; }
 export interface TableModel { headers: string[]; rows: string[][]; caption?: string; }
 export interface CarouselSlide { src: string; alt?: string; caption?: string; }
@@ -205,9 +215,10 @@ export interface BuilderProject {
   theme: ProjectTheme;
   savedThemes: ProjectTheme[];
   favoriteLibraryIds: string[];
+  designSystem: DesignSystem;
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 6;
+  schemaVersion: 7;
 }
 
 export interface ProjectSummary {

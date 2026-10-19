@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.7.0 (Phase 4 complete)
+## Current build — v0.8.0 (Phase 5 complete)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
@@ -42,6 +42,14 @@
 - Project theme system with preset palettes, typography, radius/shadow tokens, live CSS variables and current-page restyling.
 - Prompt/code files can be loaded from `.txt`, `.md`, `.tsx`, `.ts`, `.jsx` or `.js`, added to canvas, or saved into the project block library.
 - Theme tokens are preserved in standalone React/Vite exports.
+
+- Phase 5 responsive design system: Desktop default preview plus configurable Tablet/Mobile preview widths and runtime breakpoints.
+- Shared responsive cascade: Tablet inherits Desktop; Mobile inherits Desktop + Tablet, then applies Mobile overrides.
+- Automatic responsive defaults cover native elements, supplied prompt blocks, reusable components, imported code blocks and multi-page templates.
+- Responsive health audit with one-click Auto-fix All and overflow-risk reporting.
+- Project-level spacing, typography, page-padding, container-width and breakpoint tokens exported as CSS variables.
+- Per-element responsive visibility, breakpoint overrides, reset controls and spacing/type token quick-apply.
+- Theme and design-system tokens remain consistent in editor, Live/Preview modes and exported React/Vite sites.
 - Family-aware adapters cover the supplied pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, auth, timeline, cookie, animation, dock, autocomplete and avatar families.
 - Sections/Components/Templates registry includes visual thumbnails, source/group filters, persistent favorites and motion badges.
 - Imported prompt/code blocks retain source, revision and hash metadata and can be edited, updated and re-converted safely.
@@ -54,7 +62,7 @@ Heading, text, text link, badge, ordered/unordered list, button, social links, b
 
 ## Included section families
 
-Hero, pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, authentication, timelines, cookie consent, navbar and footer. More supplied blocks can be added through the same typed registry.
+Hero, pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, authentication, timelines, cookie consent, navbar and footer. More supplied blocks will be added through the same registry.
 
 ## Run the editor
 

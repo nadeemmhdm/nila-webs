@@ -12,8 +12,8 @@ Completed in v0.5.0. Includes advanced form controls and validation semantics, b
 ## Phase 4 — Block and template engine ✅
 Completed in v0.7.0. The safe family-aware prompt/code compiler converts supplied Shadcn/React/TSX/CSS inputs into editable sections, components or themes without executing arbitrary code. All 78 supplied variants are indexed in the searchable registry with visual thumbnails, source/group filters and favorites. Phase 4 also includes saved/re-convertible imports with revisions, saved themes, five multi-page site templates, reusable component integration, dependency-aware pruned React/Vite export and `nila.dependencies.json` provenance manifests.
 
-## Phase 5 — Responsive design system
-Global colors, typography, tokens, custom fonts, breakpoint controls, reusable classes, variables, spacing scale and theme presets.
+## Phase 5 — Responsive design system ✅
+Completed in v0.8.0. Desktop is the default/base preview, with configurable Tablet and Mobile preview widths plus runtime mobile/tablet breakpoints. Every existing, imported, reusable-component and template node passes through the shared responsive engine; Tablet inherits Desktop and Mobile inherits Desktop + Tablet before applying local overrides. Phase 5 adds automatic responsive defaults, overflow-safe component CSS, responsive health auditing/auto-fix, breakpoint/page-padding controls, spacing and typography scales, reusable CSS variable tokens, custom body/heading font stacks, responsive theme parity, per-breakpoint visibility/override reset, reduced-motion preference support and responsive React/Vite export parity.
 
 ## Phase 6 — Motion and interaction studio
 Scroll reveal, hover interactions, timelines, parallax, sticky sections, state transitions and reduced-motion support.

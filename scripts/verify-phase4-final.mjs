@@ -8,7 +8,7 @@ const templates=read('src/templates/site-templates.ts');
 const exporter=read('src/lib/exporter.ts');
 const store=read('src/store/builder.ts');
 const checks=[
-['version 0.7.0',read('package.json').includes('"version": "0.7.0"')],['schema v6',read('src/types.ts').includes('schemaVersion: 6')],
+['version 0.7+',/\"version\": \"0\.(?:[7-9]|[1-9]\d)\./.test(read('package.json'))],['schema v6+',/schemaVersion:\s*(?:[6-9]|[1-9]\d)/.test(read('src/types.ts'))],
 ['78 supplied variants',count===78],['family compiler',adapter.includes('pricingSection')&&adapter.includes('portfolioSection')&&adapter.includes('timelineSection')&&adapter.includes('biolinkSection')],
 ['theme parser',adapter.includes('themeFromPromptSource')&&adapter.includes('artifactType')],['safe no eval',!adapter.includes('eval(')],
 ['reconvert revisions',adapter.includes('reconvertImportedBlock')&&store.includes('reconvertImportedBlock')],['favorites',library.includes('favoritesOnly')&&store.includes('toggleFavoriteLibraryItem')],

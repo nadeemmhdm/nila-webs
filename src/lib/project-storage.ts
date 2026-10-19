@@ -3,6 +3,7 @@ import { uid } from "./nodes";
 import { createDefaultFooter, createDefaultNavbar } from "../templates/library";
 import { buildSiteTemplate } from "../templates/site-templates";
 import { defaultTheme } from "../templates/themes";
+import { defaultDesignSystem, ensureResponsiveProject } from "./design-system";
 
 const INDEX_KEY = "nila-webs-project-index-v1";
 const ACTIVE_KEY = "nila-webs-active-project-v1";
@@ -29,11 +30,12 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
     theme: raw.theme && typeof raw.theme === "object" ? raw.theme : structuredClone(defaultTheme),
     savedThemes: Array.isArray(raw.savedThemes) ? raw.savedThemes : [],
     favoriteLibraryIds: Array.isArray(raw.favoriteLibraryIds) ? raw.favoriteLibraryIds.filter((id): id is string => typeof id === "string") : [],
+    designSystem: raw.designSystem && typeof raw.designSystem === "object" ? { ...structuredClone(defaultDesignSystem), ...(raw.designSystem as any), breakpoints:{...defaultDesignSystem.breakpoints,...((raw.designSystem as any).breakpoints||{})}, contentPadding:{...defaultDesignSystem.contentPadding,...((raw.designSystem as any).contentPadding||{})}, spacing:{...defaultDesignSystem.spacing,...((raw.designSystem as any).spacing||{})}, typography:{...defaultDesignSystem.typography,...((raw.designSystem as any).typography||{})} } : structuredClone(defaultDesignSystem),
     createdAt,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : createdAt,
-    schemaVersion: 6
+    schemaVersion: 7
   };
-  return project;
+  return ensureResponsiveProject(project);
 }
 
 export function createProjectModel(name = "Untitled Project", description = "", templateId = "blank"): BuilderProject {
@@ -44,8 +46,8 @@ export function createProjectModel(name = "Untitled Project", description = "", 
   return {
     id: uid("project"), name: name.trim() || "Untitled Project", description: description.trim(), templateId,
     pages, activePageId: pages[0].id, globalNavbar: built?.globalNavbar || createDefaultNavbar(), globalFooter: built?.globalFooter || createDefaultFooter(), assets: [], components: [], importedBlocks: [],
-    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [],
-    createdAt: now, updatedAt: now, schemaVersion: 6
+    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [], designSystem: structuredClone(defaultDesignSystem),
+    createdAt: now, updatedAt: now, schemaVersion: 7
   };
 }
 

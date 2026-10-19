@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { ReactNode } from "react";
-import { ClipboardCopy, Copy, Eye, EyeOff, FolderOpen, Link2, RefreshCw, Save, Trash2, Unlink, Upload } from "lucide-react";
+import { ClipboardCopy, Copy, Eye, EyeOff, FolderOpen, Link2, RefreshCw, RotateCcw, Save, Trash2, Unlink, Upload } from "lucide-react";
 import { getNodeAnywhere, useBuilder } from "../store/builder";
 import type { AnimationName, AssetKind, BuilderNode, HoverAnimation, InputKind, NodeStyle } from "../types";
 import { resolveStyle } from "../lib/nodes";
@@ -12,7 +12,7 @@ const typeFields: Array<[keyof NodeStyle, string]> = [["fontSize","Font size"],[
 const inputKinds: InputKind[] = ["text","email","password","number","date","datetime-local","time","tel","url","search"];
 
 export default function PropertiesPanel() {
-  const { project, selectedId, viewport, updateNode, updateStyle, setNodeHidden, deleteNode, duplicateNode, copyNode, pasteNode, clipboard, saveNodeAsComponent, syncComponentFromNode, detachComponent, deleteComponent } = useBuilder();
+  const { project, selectedId, viewport, updateNode, updateStyle, setNodeHidden, clearResponsiveOverrides, deleteNode, duplicateNode, copyNode, pasteNode, clipboard, saveNodeAsComponent, syncComponentFromNode, detachComponent, deleteComponent } = useBuilder();
   const node = selectedId ? getNodeAnywhere(project, selectedId) : undefined;
   if (!node) return <aside className="properties-panel empty-properties"><div className="empty-property-state"><div className="empty-property-icon">◫</div><strong>Select an element</strong><p>Click any block on the canvas or choose it from Layers to edit content, responsive layout, validation, accessibility, animation and links.</p>{clipboard && <button className="secondary-button" onClick={() => pasteNode(null)}><ClipboardCopy size={14}/>Paste copied element</button>}</div></aside>;
   const style = resolveStyle(node, viewport);
@@ -69,18 +69,21 @@ export default function PropertiesPanel() {
     </PropertySection>
 
     <PropertySection title={`Responsive · ${viewport}`}>
-      <div className="responsive-note">Desktop is the base style. Tablet and mobile only store overrides, so one block stays reusable across every breakpoint.</div>
+      <div className="responsive-note">Desktop is the base style. Tablet inherits Desktop; Mobile inherits Desktop + Tablet, then applies its own overrides. This keeps every block responsive without duplicating styles.</div>{viewport!=="desktop"&&<button className="responsive-reset" onClick={()=>clearResponsiveOverrides(node.id,viewport)}><RotateCcw size={12}/>Reset {viewport} overrides</button>}
       <Field label="Visible"><label className="toggle-line"><input type="checkbox" checked={!node.hiddenOn?.[viewport]} onChange={e => setNodeHidden(node.id, viewport, !e.target.checked)}/><span>{node.hiddenOn?.[viewport] ? "Hidden" : "Shown"}</span></label></Field>
       {sizeFields.map(([key,label]) => <StyleInput key={key} label={label} value={String(style[key])} onChange={v => updateStyle(node.id,{ [key]: v })}/>)}
       <Field label="Display"><select value={style.display} onChange={e => updateStyle(node.id,{ display:e.target.value as NodeStyle["display"] })}><option>block</option><option>flex</option><option>grid</option></select></Field>
       {style.display === "grid" && <StyleInput label="Grid columns" value={style.gridColumns} onChange={v => updateStyle(node.id,{gridColumns:v})}/>} 
       {style.display === "flex" && <><Field label="Direction"><select value={style.flexDirection} onChange={e => updateStyle(node.id,{flexDirection:e.target.value as NodeStyle["flexDirection"]})}><option>column</option><option>row</option></select></Field><Field label="Justify"><select value={style.justifyContent} onChange={e => updateStyle(node.id,{justifyContent:e.target.value as NodeStyle["justifyContent"]})}><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option><option value="space-between">Space between</option><option value="space-around">Space around</option></select></Field><Field label="Align"><select value={style.alignItems} onChange={e => updateStyle(node.id,{alignItems:e.target.value as NodeStyle["alignItems"]})}><option>stretch</option><option value="flex-start">Start</option><option value="center">Center</option><option value="flex-end">End</option></select></Field></>}
       {spacingFields.map(([key,label]) => <StyleInput key={key} label={label} value={String(style[key])} onChange={v => updateStyle(node.id,{ [key]: v })}/>)}
+      <Field label="Padding token"><select value="" onChange={e=>e.target.value&&updateStyle(node.id,{padding:e.target.value})}><option value="">Choose…</option>{Object.entries(project.designSystem.spacing).map(([k,v])=><option key={k} value={`var(--nw-space-${k==="xxl"?"2xl":k})`}>{k.toUpperCase()} · {v}</option>)}</select></Field>
+      <Field label="Gap token"><select value="" onChange={e=>e.target.value&&updateStyle(node.id,{gap:e.target.value})}><option value="">Choose…</option>{Object.entries(project.designSystem.spacing).map(([k,v])=><option key={k} value={`var(--nw-space-${k==="xxl"?"2xl":k})`}>{k.toUpperCase()} · {v}</option>)}</select></Field>
     </PropertySection>
 
     <PropertySection title="Typography">
       <Field label="Text color"><input type="color" value={safeColor(style.color,"#111827")} onChange={e => updateStyle(node.id,{color:e.target.value})}/></Field>
       {typeFields.map(([key,label]) => <StyleInput key={key} label={label} value={String(style[key])} onChange={v => updateStyle(node.id,{ [key]: v })}/>)}
+      <Field label="Type token"><select value="" onChange={e=>e.target.value&&updateStyle(node.id,{fontSize:e.target.value})}><option value="">Choose…</option>{Object.entries(project.designSystem.typography).map(([k,v])=><option key={k} value={`var(--nw-type-${k==="xxl"?"2xl":k})`}>{k} · {v}</option>)}</select></Field>
       <Field label="Align"><select value={style.textAlign} onChange={e => updateStyle(node.id,{textAlign:e.target.value as NodeStyle["textAlign"]})}><option>left</option><option>center</option><option>right</option></select></Field>
     </PropertySection>
 

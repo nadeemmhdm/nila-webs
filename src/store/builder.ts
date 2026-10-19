@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import type { BuilderNode, BuilderPage, BuilderProject, ImportedBlock, NodeStyle, ProjectAsset, ProjectTheme, SavedComponent, Viewport } from "../types";
+import type { BuilderNode, BuilderPage, BuilderProject, DesignSystem, ImportedBlock, NodeStyle, ProjectAsset, ProjectTheme, SavedComponent, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
 import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
 import { reconvertImportedBlock as reconvertBlock } from "../lib/prompt-adapter";
 import { buildSiteTemplate } from "../templates/site-templates";
+import { ensureResponsiveNode, ensureResponsiveProject } from "../lib/design-system";
 
 const HISTORY_LIMIT = 60;
 const load = (): BuilderProject => loadInitialProject();
@@ -61,6 +62,9 @@ type State = {
   addProjectAsset: (asset: ProjectAsset) => void;
   removeProjectAsset: (assetId: string) => void;
   setTheme: (theme: ProjectTheme) => void;
+  setDesignSystem: (patch: Partial<DesignSystem>) => void;
+  applyResponsiveDefaults: () => void;
+  clearResponsiveOverrides: (id:string, viewport: Exclude<Viewport,"desktop">) => void;
   saveCurrentTheme: (name?: string) => void;
   deleteSavedTheme: (themeId: string) => void;
   restyleCurrentPage: () => void;
@@ -120,6 +124,9 @@ export const useBuilder = create<State>((set, get) => ({
   addProjectAsset: asset => set(s => commit(s, { ...s.project, assets: [...s.project.assets.filter(a => a.id !== asset.id), asset] })),
   removeProjectAsset: assetId => set(s => commit(s, { ...s.project, assets: s.project.assets.filter(a => a.id !== assetId) })),
   setTheme: theme => set(s => commit(s, { ...s.project, theme: structuredClone(theme) })),
+  setDesignSystem: patch => set(s => { const designSystem={...s.project.designSystem,...patch,breakpoints:{...s.project.designSystem.breakpoints,...(patch.breakpoints||{})},contentPadding:{...s.project.designSystem.contentPadding,...(patch.contentPadding||{})},spacing:{...s.project.designSystem.spacing,...(patch.spacing||{})},typography:{...s.project.designSystem.typography,...(patch.typography||{})}}; return commit(s, ensureResponsiveProject({...s.project,designSystem})); }),
+  applyResponsiveDefaults: () => set(s => commit(s, ensureResponsiveProject(s.project))),
+  clearResponsiveOverrides: (id, viewport) => set(s => { const node=getNodeAnywhere(s.project,id); if(!node) return s; const responsive={...(node.responsive||{})}; delete responsive[viewport]; let project=s.project; if(findNode([project.globalNavbar],id)) project={...project,globalNavbar:mapNode([project.globalNavbar],id,n=>({...n,responsive}))[0]}; else if(findNode([project.globalFooter],id)) project={...project,globalFooter:mapNode([project.globalFooter],id,n=>({...n,responsive}))[0]}; else project={...project,pages:project.pages.map(p=>({...p,nodes:mapNode(p.nodes,id,n=>({...n,responsive}))}))}; return commit(s,project); }),
   saveCurrentTheme: name => set(s => {
     const now = Date.now().toString(36);
     const saved: ProjectTheme = { ...structuredClone(s.project.theme), id: s.project.theme.id.startsWith("saved-") ? s.project.theme.id : `saved-${now}`, name: (name || s.project.theme.name || "Saved Theme").trim(), source: "custom" };
@@ -147,7 +154,7 @@ export const useBuilder = create<State>((set, get) => ({
     const favorites = s.project.favoriteLibraryIds.includes(itemId) ? s.project.favoriteLibraryIds.filter(id => id !== itemId) : [...s.project.favoriteLibraryIds, itemId];
     return commit(s, { ...s.project, favoriteLibraryIds: favorites });
   }),
-  addImportedBlock: block => set(s => commit(s, { ...s.project, importedBlocks: [...s.project.importedBlocks.filter(item => item.id !== block.id), block] })),
+  addImportedBlock: block => set(s => commit(s, { ...s.project, importedBlocks: [...s.project.importedBlocks.filter(item => item.id !== block.id), { ...block, node: ensureResponsiveNode(block.node,s.project.designSystem) }] })),
   reconvertImportedBlock: blockId => set(s => {
     const block = s.project.importedBlocks.find(item => item.id === blockId);
     if (!block?.source) return s;
@@ -159,7 +166,7 @@ export const useBuilder = create<State>((set, get) => ({
     const built = buildSiteTemplate(templateId);
     if (!built) return s;
     const pages = built.pages.map(page => ({ ...page, nodes: page.nodes.map(cloneNode) }));
-    return commit(s, { ...s.project, templateId, pages, activePageId: pages[0].id, globalNavbar: built.globalNavbar, globalFooter: built.globalFooter, theme: structuredClone(built.theme) }, { selectedId: null });
+    return commit(s, ensureResponsiveProject({ ...s.project, templateId, pages, activePageId: pages[0].id, globalNavbar: built.globalNavbar, globalFooter: built.globalFooter, theme: structuredClone(built.theme) }), { selectedId: null });
   }),
 
   undo: () => set(s => {
@@ -190,9 +197,10 @@ export const useBuilder = create<State>((set, get) => ({
     return commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, path: normalized } : p) });
   }),
   togglePageGlobal: (id, key, value) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, [key]: value } : p) })),
-  replaceCurrentPageNodes: nodes => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === s.project.activePageId ? { ...p, nodes: nodes.map(cloneNode) } : p) }, { selectedId: null })),
+  replaceCurrentPageNodes: nodes => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === s.project.activePageId ? { ...p, nodes: nodes.map(n=>ensureResponsiveNode(cloneNode(n),s.project.designSystem)) } : p) }, { selectedId: null })),
 
   addNode: (node, parentId = null) => set(s => {
+    node = ensureResponsiveNode(node, s.project.designSystem);
     if (node.type === "navbar") return commit(s, { ...s.project, globalNavbar: node }, { selectedId: node.id });
     if (node.type === "footer") return commit(s, { ...s.project, globalFooter: node }, { selectedId: node.id });
     const pages = s.project.pages.map(p => p.id === s.project.activePageId ? { ...p, nodes: appendNode(p.nodes, parentId, node) } : p);
@@ -282,7 +290,7 @@ export const useBuilder = create<State>((set, get) => ({
     globalFooter: detachComponentInstances([s.project.globalFooter], componentId)[0],
     pages: s.project.pages.map(page => ({ ...page, nodes: detachComponentInstances(page.nodes, componentId) }))
   })),
-  loadProject: project => { const normalized = normalizeProject(project as BuilderProject & Record<string, unknown>); persist(normalized); set({ project: normalized, selectedId: null, past: [], future: [] }); },
+  loadProject: project => { const normalized = normalizeProject(project as BuilderProject & Record<string, unknown>); persist(normalized); set({ project: normalized, selectedId: null, viewport: "desktop", past: [], future: [] }); },
   reset: () => {
     const current = get().project;
     const fresh = createProjectModel(current.name, current.description || "", "blank");

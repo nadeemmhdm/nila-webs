@@ -1,4 +1,5 @@
 import type { BuilderNode, NodeStyle, NodeType, Viewport } from "../types";
+import { resolveResponsiveStyle } from "./design-system";
 
 export const uid = (prefix = "node") => `${prefix}_${crypto.randomUUID().slice(0, 8)}`;
 
@@ -135,6 +136,5 @@ export function reorderNode(nodes: BuilderNode[], id: string, direction: -1 | 1)
 }
 
 export function resolveStyle(node: BuilderNode, viewport: Viewport): NodeStyle {
-  if (viewport === "desktop") return node.style;
-  return { ...node.style, ...(node.responsive?.[viewport] || {}) };
+  return resolveResponsiveStyle(node, viewport);
 }

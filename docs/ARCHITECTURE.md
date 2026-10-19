@@ -42,3 +42,8 @@ Navbar and footer are project-level nodes. Pages reference them through `showNav
 ## Security boundary
 
 The current editor does not execute arbitrary pasted JavaScript. User-supplied source blocks are converted through trusted adapters before appearing in the native library. This intentionally reduces the risk of executing unreviewed code inside the Tauri webview. A future custom-code mode should use an explicit sandbox and permission model rather than direct eval.
+
+
+## Responsive design system
+
+`BuilderProject.designSystem` is the single project-level source for runtime breakpoints, preview widths, content padding, spacing tokens and typography tokens. Desktop node styles are the base. Tablet resolves as Desktop + Tablet overrides; Mobile resolves as Desktop + Tablet + Mobile overrides. `ensureResponsiveProject` migrates older projects and provides non-destructive inferred defaults for every node, while explicit user overrides always win. The editor canvas and standalone React/Vite exporter use the same cascade and CSS-variable token model.

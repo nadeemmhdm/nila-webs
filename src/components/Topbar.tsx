@@ -6,6 +6,7 @@ import { useBuilder } from "../store/builder";
 
 export default function Topbar({ onProjects }: { onProjects: () => void }) {
   const { project, setProjectName, viewport, setViewport, previewMode, setPreviewMode, livePreview, setLivePreview, leftCollapsed, rightCollapsed, toggleLeft, toggleRight, past, future, undo, redo, loadProject, reset } = useBuilder();
+  const vpWidth = viewport === "desktop" ? project.designSystem.breakpoints.previewDesktop : viewport === "tablet" ? project.designSystem.breakpoints.previewTablet : project.designSystem.breakpoints.previewMobile;
   const fileRef = useRef<HTMLInputElement>(null);
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(project,null,2)], { type:"application/json" });
@@ -16,7 +17,7 @@ export default function Topbar({ onProjects }: { onProjects: () => void }) {
     <div className="brand-area"><button className="projects-back-button" onClick={onProjects} title="Back to projects"><FolderKanban size={15}/></button><div className="brand-mark"><Zap size={17}/></div><div className="brand-copy"><strong>Nila Webs</strong><span>Visual React + Vite builder</span></div><input className="project-name-input" value={project.name} onChange={e => setProjectName(e.target.value)} aria-label="Project name"/></div>
     <div className="center-tools">
       {!previewMode && <button className="tiny-icon" onClick={toggleLeft} title="Toggle left sidebar">{leftCollapsed?<PanelLeftOpen size={16}/>:<PanelLeftClose size={16}/>}</button>}
-      <div className="viewport-switcher"><button className={viewport === "desktop" ? "active" : ""} onClick={() => setViewport("desktop")} title="Desktop"><Monitor size={16}/></button><button className={viewport === "tablet" ? "active" : ""} onClick={() => setViewport("tablet")} title="Tablet"><Tablet size={16}/></button><button className={viewport === "mobile" ? "active" : ""} onClick={() => setViewport("mobile")} title="Mobile"><Smartphone size={16}/></button></div>
+      <div className="viewport-switcher"><button className={viewport === "desktop" ? "active" : ""} onClick={() => setViewport("desktop")} title={`Desktop · ${project.designSystem.breakpoints.previewDesktop}px`}><Monitor size={16}/><span>Desktop</span></button><button className={viewport === "tablet" ? "active" : ""} onClick={() => setViewport("tablet")} title={`Tablet · ${project.designSystem.breakpoints.previewTablet}px`}><Tablet size={16}/><span>Tablet</span></button><button className={viewport === "mobile" ? "active" : ""} onClick={() => setViewport("mobile")} title={`Mobile · ${project.designSystem.breakpoints.previewMobile}px`}><Smartphone size={16}/><span>Mobile</span></button><em>{vpWidth}px</em></div>
       {!previewMode && <button className="tiny-icon" onClick={toggleRight} title="Toggle properties">{rightCollapsed?<PanelRightOpen size={16}/>:<PanelRightClose size={16}/>}</button>}
       <div className="history-tools"><button disabled={!past.length} onClick={undo} title="Undo"><Undo2 size={15}/></button><button disabled={!future.length} onClick={redo} title="Redo"><Redo2 size={15}/></button></div>
     </div>
