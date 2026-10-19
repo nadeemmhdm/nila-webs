@@ -3,7 +3,7 @@ name: Apply Phase 5 Complete
 on:
   push:
     paths:
-      - 'p5stage.tar.gz'
+      - 'p5stage.part.*'
 
 permissions:
   contents: write
@@ -22,10 +22,12 @@ jobs:
           node-version: 22
       - name: Verify and extract Phase 5 source
         run: |
-          echo "be4d69a18319ce7663d216f5aa23ee90da361922d44c81db9855a184ee1bce40  p5stage.tar.gz" | sha256sum -c -
-          gzip -t p5stage.tar.gz
-          tar -xzf p5stage.tar.gz
-          rm -f p5stage.tar.gz
+          cat p5stage.part.* > /tmp/p5stage.b64
+          base64 -d /tmp/p5stage.b64 > /tmp/p5stage.tar.gz
+          echo "be4d69a18319ce7663d216f5aa23ee90da361922d44c81db9855a184ee1bce40  /tmp/p5stage.tar.gz" | sha256sum -c -
+          gzip -t /tmp/p5stage.tar.gz
+          tar -xzf /tmp/p5stage.tar.gz
+          rm -f p5stage.tar.gz p5stage.part.*
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Verify Phase 3 compatibility
