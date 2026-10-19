@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.4.0 (Phase 2 workspace + assets)
+## Current build — v0.5.0 (Phase 2 workspace + assets)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
@@ -94,3 +94,21 @@ Some starter concepts and block adapters are derived from user-supplied MIT-lice
 ## License
 
 Nila Webs source is available under the MIT License. See [`LICENSE`](LICENSE).
+
+
+## Phase 3 complete — v0.5.0
+
+The complete element-system milestone now includes advanced form semantics and validation, accessibility metadata, sandboxed custom HTML, synced component-symbol instances, richer table/list controls, modal and carousel behavior controls, keyboard editing shortcuts, editor/export parity, and an automated Phase 3 regression gate in CI.
+
+### Phase 3 final capabilities
+
+- Typography/actions: text links, badges, editable lists and quick icon presets
+- Forms: text/email/password/number/date/datetime/tel/url/search inputs, textarea, select, checkbox, radio, switch, range and file input
+- Validation: required, pattern, min/max length, field names/defaults, file accept/multiple
+- Media/embeds: image/video assets, carousel, iframe embed, map and sandboxed custom HTML
+- Data/interaction: editable table, tabs, accordion and modal
+- Components: duplicated Component Symbols keep a sync key and can be synchronized from the Properties panel
+- Accessibility: ARIA label, title/tooltip and image alt guidance
+- Editor productivity: undo/redo plus keyboard copy, cut, paste, duplicate, delete and selection clear
+- Export parity: Phase 3 element behavior is emitted into standalone React + Vite exports
+- CI: `npm run check:phase3` validates the Phase 3 registry/runtime/export contract

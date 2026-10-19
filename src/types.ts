@@ -50,6 +50,7 @@ export interface NodeResponsiveStyle {
   mobile?: Partial<NodeStyle>;
 }
 
+
 export interface InteractiveItem {
   title: string;
   body: string;

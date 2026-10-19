@@ -6,8 +6,8 @@ Desktop shell, React/Vite editor, multi-page model, global navbar/footer, base p
 ## Phase 2 — Professional workspace & editor UX 🟣 in progress
 Splash/boot experience, projects dashboard, recent/all projects, blank/template project creation, MIT App Inventor-style activity bar, collapsible panels, Layers tree, Assets library, image/video upload or URL sources, live interactions, full preview, responsive properties, visibility per breakpoint, undo/redo, copy/duplicate, nested drag-and-drop and improved editor UI. Uploaded project media exports to `public/assets/`.
 
-## Phase 3 — Complete element system 🟣 in progress
-Advanced form controls, badges, lists, embeds, maps, table, tabs, accordion, modal, carousel, social links and component-symbol containers are implemented in v0.4.0. The next Phase 3 milestone will add richer visual editors for complex component data, linked/synced symbol instances and additional form semantics.
+## Phase 3 — Complete element system ✅
+Completed in v0.5.0. Includes advanced form controls and validation semantics, badges/lists/icons, embeds/maps/sandboxed HTML, editable tables, tabs, accordion, modal, carousel, social links, synced component-symbol instances, accessibility properties, keyboard editing shortcuts, export parity and an automated Phase 3 regression gate.
 
 ## Phase 4 — Block and template engine
 Import/adapt the full supplied Shadcn block catalog, visual property manifests, reusable variants, starter websites and dependency-aware complex React blocks.

@@ -84,6 +84,8 @@ This file tracks block families detected in the user-supplied ShadcnSpace prompt
 - Avatar  6
 - Avatar  7
 
+
+
 ## Phase 3 element catalog
 
 Typography/actions: Text Link, Badge, List, Social Links.
@@ -95,3 +97,8 @@ Media/data: Embed/iFrame, Map Embed, Carousel and Table.
 Interactive: Tabs, Accordion and Modal.
 
 Components: Component Symbol container for grouping reusable UI.
+
+
+## Phase 3 native element coverage — v0.5.0
+
+Phase 3 is complete for the general-purpose element system. Native builder/runtime/export support now covers links, badges, lists, advanced inputs and validation, checkbox/radio/switch/range/file controls, embeds, maps, sandboxed HTML, tables, tabs, accordions, modals, carousels, social links and synced component symbols. The ShadcnSpace-specific block families listed above remain Phase 4 block/template-engine work.
