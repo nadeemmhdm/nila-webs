@@ -10,7 +10,7 @@ Splash/boot experience, projects dashboard, recent/all projects, blank/template 
 Completed in v0.5.0. Includes advanced form controls and validation semantics, badges/lists/navigation/media/data elements, embeds/maps, table editor, tabs, accordion, modal, autoplay carousel, social links, custom HTML/code, alert/avatar/progress/breadcrumb/rating, accessibility properties, and project-level reusable linked components with save/insert/sync/detach/delete workflows. Export parity and a Phase 3 CI regression verifier are included.
 
 ## Phase 4 — Block and template engine ✅
-Started in v0.6.0. The prompt adapter safely converts supplied Shadcn/React/TSX prompts into editable builder trees; 78 supplied variants are indexed as searchable catalog entries. Theme presets/tokens, prompt/code file import and project-saved imported blocks are live. Remaining Phase 4 work will increase pixel-level adapters for complex variants, add dependency manifests/thumbnails/favorites and expand complete-site template composition.
+Completed in v0.7.0. The safe family-aware prompt/code compiler converts supplied Shadcn/React/TSX/CSS inputs into editable sections, components or themes without executing arbitrary code. All 78 supplied variants are indexed in the searchable registry with visual thumbnails, source/group filters and favorites. Phase 4 also includes saved/re-convertible imports with revisions, saved themes, five multi-page site templates, reusable component integration, dependency-aware pruned React/Vite export and `nila.dependencies.json` provenance manifests.
 
 ## Phase 5 — Responsive design system
 Global colors, typography, tokens, custom fonts, breakpoint controls, reusable classes, variables, spacing scale and theme presets.
