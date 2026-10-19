@@ -53,3 +53,5 @@ jobs:
           git add -A
           git commit -m "feat: complete phase 6 motion and interaction studio"
           git push origin HEAD:main
+
+# Phase 6 retry includes explicit new motion engine, panel and verifier files.
