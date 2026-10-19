@@ -1,36 +1,10 @@
 name: Apply Phase 3 Final Tar
 
 on:
-  push:
-    paths:
-      - 'phase3final.tar.trigger'
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  apply:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Validate and extract final Phase 3
-        run: |
-          cat phase3final.tar.part.* > /tmp/phase3-final.b64
-          base64 -d /tmp/phase3-final.b64 > /tmp/phase3-final.tar.gz
-          gzip -t /tmp/phase3-final.tar.gz
-          tar -tzf /tmp/phase3-final.tar.gz
-          tar -xzf /tmp/phase3-final.tar.gz
-          git checkout HEAD -- .github/workflows/
-          rm -f phase3final.tar.part.* phase3final.tar.trigger
-          rm -f phase3fin.part.* phase3final.trigger
-          rm -f phase3.patch.gz.b64 phase3.part.* phase3.trigger
-      - name: Commit Phase 3 final source
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat: complete phase 3 visual element system"
-          git push origin HEAD:main
+      - run: echo "Phase 3 final apply completed; workflow retired."
