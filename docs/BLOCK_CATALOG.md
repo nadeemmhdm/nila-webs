@@ -1,6 +1,6 @@
 # Supplied Block Catalog
 
-This file tracks block families detected in the user-supplied ShadcnSpace prompt bundle. Native adapters already implemented in `src/templates/library.ts` are only the first subset; later phases will add the remaining stateful components through typed adapters.
+This file tracks the block families detected in the user-supplied ShadcnSpace prompt bundle. Phase 4 completes the typed registry/adaptation layer for the supplied set: catalog entries can be searched, previewed, favorited, converted into editable builder trees, re-converted from retained source, themed and exported with dependency provenance.
 
 ## Detected entries
 
@@ -84,8 +84,6 @@ This file tracks block families detected in the user-supplied ShadcnSpace prompt
 - Avatar  6
 - Avatar  7
 
-
-
 ## Phase 3 element catalog
 
 Typography/actions: Text Link, Badge, List, Social Links.
@@ -100,12 +98,11 @@ Components: Component Symbol container for grouping reusable UI.
 
 ## Phase 3 engine status
 
-The generic element engine is complete in v0.5.0, including form semantics, accessibility, interactive components, advanced media/data blocks and linked reusable project components. Phase 4 continues adapting the remaining supplied ShadcnSpace block families as visual section/template adapters.
-
+The generic element engine is complete in v0.5.0, including form semantics, accessibility, interactive components, advanced media/data blocks and linked reusable project components. Phase 4 is complete in v0.7.0 with the supplied prompt/code families available through the searchable section/component/theme registry, multi-page templates, saved revisions, thumbnails/favorites and dependency-aware export.
 
 ## Phase 4 prompt adapter
 
-Nila Webs v0.6.0 indexes 78 variants from the supplied prompt/code bundle. Every catalog card can create an editable native node tree; prompt/TSX text can also be imported at runtime from the new Import activity. The importer extracts user-facing copy, image/video URLs, interactive family hints and motion signals and does not execute arbitrary pasted JavaScript.
+Nila Webs v0.6.0 introduced the 78-variant prompt/code catalog and runtime Import activity. The importer extracts user-facing copy, image/video URLs, dependencies, interactive family hints and motion signals without executing arbitrary pasted JavaScript.
 
 ## Phase 4 final registry
 
