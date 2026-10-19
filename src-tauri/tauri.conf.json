@@ -30,7 +30,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis", "msi"],
-    "publisher": "Nila Webs",
+    "publisher": "Nila Webs Project",
     "copyright": "Copyright © 2026 Nila Webs",
     "icon": ["icons/icon.ico"],
     "windows": {
