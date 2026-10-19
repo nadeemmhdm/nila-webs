@@ -1,9 +1,12 @@
 [package]
 name = "nila-webs"
-version = "1.2.0"
+version = "1.5.0"
 description = "Windows-first visual React + Vite website builder"
 authors = ["Nila Webs contributors"]
 edition = "2021"
+license = "MIT"
+homepage = "https://github.com/nadeemmhdm/nila-webs"
+repository = "https://github.com/nadeemmhdm/nila-webs"
 
 [lib]
 name = "nila_webs_lib"
@@ -16,3 +19,10 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true

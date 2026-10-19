@@ -39,6 +39,8 @@ jobs:
         run: npm run verify:react-export
       - name: Verify Phase 9 production export
         run: npm run verify:phase9
+      - name: Verify Phase 10 Windows release
+        run: npm run verify:phase10
       - name: Phase 3 regression gate
         run: npm run check:phase3
       - name: Build editor

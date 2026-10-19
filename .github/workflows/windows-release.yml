@@ -1,0 +1,76 @@
+name: Windows Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'scripts/verify-phase10.mjs'
+      - '.github/workflows/windows-release.yml'
+      - 'docs/ROADMAP.md'
+      - 'RELEASE_NOTES.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify Phase 10
+        run: npm run verify:phase10
+      - name: Verify web build
+        run: npm run build
+      - name: Build Windows installers
+        run: npm run build:windows
+      - name: Collect installers
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release/windows | Out-Null
+          Get-ChildItem -Recurse src-tauri/target/release/bundle -Include *.exe,*.msi | ForEach-Object { Copy-Item $_.FullName release/windows/ }
+          $count=(Get-ChildItem release/windows -Include *.exe,*.msi).Count
+          if ($count -lt 2) { throw "Expected both EXE and MSI installers, found $count" }
+      - name: Sign installers when certificate is configured
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          if (-not $env:WINDOWS_CERTIFICATE_BASE64) { Write-Host 'No signing certificate configured; publishing unsigned installers.'; exit 0 }
+          $pfx="$env:RUNNER_TEMP\nila-webs.pfx"
+          [IO.File]::WriteAllBytes($pfx,[Convert]::FromBase64String($env:WINDOWS_CERTIFICATE_BASE64))
+          $signtool=(Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe' | Sort-Object FullName -Descending | Select-Object -First 1).FullName
+          if (-not $signtool) { throw 'signtool.exe not found' }
+          Get-ChildItem release/windows -Include *.exe,*.msi | ForEach-Object { & $signtool sign /f $pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $_.FullName; if ($LASTEXITCODE -ne 0) { throw "Signing failed: $($_.Name)" } }
+      - name: Generate SHA256 checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem release/windows -Include *.exe,*.msi | ForEach-Object { $h=Get-FileHash $_.FullName -Algorithm SHA256; "$($h.Hash.ToLower())  $($_.Name)" } | Set-Content release/windows/SHA256SUMS.txt
+      - name: Upload Windows installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: nila-webs-v1.5.0-windows-installers
+          path: release/windows/*
+          if-no-files-found: error
+      - name: Publish tagged GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$env:GITHUB_REF_NAME" 2>$null
+          if ($LASTEXITCODE -ne 0) { gh release create "$env:GITHUB_REF_NAME" --title "Nila Webs $env:GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md }
+          Get-ChildItem release/windows/* | ForEach-Object { gh release upload "$env:GITHUB_REF_NAME" $_.FullName --clobber }
