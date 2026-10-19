@@ -11,10 +11,12 @@ export const defaultSeoSettings = (name = "Nila Webs Site"): SeoSettings => ({
   index: true,
   follow: true,
   generateSitemap: true,
-  generateRobots: true
+  generateRobots: true,
+  organizationName: name, organizationLogo: "", defaultAuthor: "", twitterSite: "", keyTopics: "",
+  robotsMode: "auto", robotsContent: "", generateLlms: true, llmsMode: "auto", llmsContent: ""
 });
 
-export const defaultPageSeo = (name = "Page"): PageSeo => ({ title: name, description: "", image: "", canonical: "", noIndex: false });
+export const defaultPageSeo = (name = "Page"): PageSeo => ({ title: name, description: "", image: "", canonical: "", noIndex: false, keywords: "", schemaType: "WebPage", answerSummary: "", entityName: name, author: "", dateModified: "", citations: "" });
 
 export function normalizeSeoSettings(raw: Partial<SeoSettings> | undefined, name: string): SeoSettings {
   return { ...defaultSeoSettings(name), ...(raw || {}) };

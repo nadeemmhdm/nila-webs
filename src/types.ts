@@ -23,6 +23,9 @@ export type FormMethod = "get" | "post";
 export type LinkKind = "page" | "anchor" | "external" | "email" | "phone";
 export type FormProvider = "none" | "custom" | "formspree";
 export type PromptArtifactType = "section" | "component" | "theme";
+export type SeoSchemaType = "WebPage" | "Article" | "FAQPage" | "Product" | "Service" | "Organization" | "LocalBusiness" | "SoftwareApplication" | "Person";
+export type ContentFileMode = "auto" | "custom";
+export type SecurityHeadersPreset = "balanced" | "strict" | "custom";
 
 export interface ThemeColors {
   background: string; surface: string; surfaceAlt: string; text: string; muted: string; primary: string; primaryText: string; secondary: string; border: string; success: string; warning: string; danger: string;
@@ -97,10 +100,22 @@ export interface TableModel { headers: string[]; rows: string[][]; caption?: str
 export interface CarouselSlide { src: string; alt?: string; caption?: string; }
 export interface SocialLink { label: string; href: string; }
 
-export interface PageSeo { title: string; description: string; image: string; canonical: string; noIndex: boolean; }
-export interface SeoSettings { siteTitle: string; titleTemplate: string; description: string; siteUrl: string; language: string; defaultImage: string; favicon: string; index: boolean; follow: boolean; generateSitemap: boolean; generateRobots: boolean; }
-export interface SiteAuditIssue { severity: "error" | "warning" | "info"; code: string; message: string; pageId?: string; nodeId?: string; }
+export interface PageSeo {
+  title: string; description: string; image: string; canonical: string; noIndex: boolean;
+  keywords: string; schemaType: SeoSchemaType; answerSummary: string; entityName: string; author: string; dateModified: string; citations: string;
+}
+export interface SeoSettings {
+  siteTitle: string; titleTemplate: string; description: string; siteUrl: string; language: string; defaultImage: string; favicon: string; index: boolean; follow: boolean; generateSitemap: boolean; generateRobots: boolean;
+  organizationName: string; organizationLogo: string; defaultAuthor: string; twitterSite: string; keyTopics: string;
+  robotsMode: ContentFileMode; robotsContent: string; generateLlms: boolean; llmsMode: ContentFileMode; llmsContent: string;
+}
+export interface SecuritySettings {
+  enableHeaders: boolean; headersPreset: SecurityHeadersPreset; contentSecurityPolicy: string; referrerPolicy: string; frameOptions: string; permissionsPolicy: string; strictTransportSecurity: string; crossOriginOpenerPolicy: string;
+  generateSecurityTxt: boolean; securityContact: string; securityPolicyUrl: string; securityExpires: string; securityAcknowledgments: string;
+}
+export interface SiteAuditIssue { severity: "error" | "warning" | "info"; code: string; message: string; pageId?: string; nodeId?: string; category?: "seo" | "aeo" | "geo" | "security"; points?: number; }
 export interface SiteAuditResult { score: number; issues: SiteAuditIssue[]; }
+export interface QualityAuditResult { overall: number; seo: number; aeo: number; geo: number; security: number; issues: SiteAuditIssue[]; }
 
 export interface BuilderNode {
   id: string;
@@ -258,9 +273,10 @@ export interface BuilderProject {
   designSystem: DesignSystem;
   motionSystem: MotionSystem;
   seo: SeoSettings;
+  security: SecuritySettings;
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 9;
+  schemaVersion: 10;
 }
 
 export interface ProjectSummary {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { BuilderNode, BuilderPage, BuilderProject, DesignSystem, ImportedBlock, MotionSystem, NodeStyle, PageSeo, ProjectAsset, ProjectTheme, SavedComponent, SeoSettings, Viewport } from "../types";
+import type { BuilderNode, BuilderPage, BuilderProject, DesignSystem, ImportedBlock, MotionSystem, NodeStyle, PageSeo, ProjectAsset, ProjectTheme, SavedComponent, SeoSettings, SecuritySettings, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
 import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
 import { reconvertImportedBlock as reconvertBlock } from "../lib/prompt-adapter";
@@ -67,6 +67,7 @@ type State = {
   setDesignSystem: (patch: Partial<DesignSystem>) => void;
   setMotionSystem: (patch: Partial<MotionSystem>) => void;
   setSeo: (patch: Partial<SeoSettings>) => void;
+  setSecurity: (patch: Partial<SecuritySettings>) => void;
   updatePageSeo: (id: string, patch: Partial<PageSeo>) => void;
   applyMotionDefaults: () => void;
   applyResponsiveDefaults: () => void;
@@ -133,6 +134,7 @@ export const useBuilder = create<State>((set, get) => ({
   setDesignSystem: patch => set(s => { const designSystem={...s.project.designSystem,...patch,breakpoints:{...s.project.designSystem.breakpoints,...(patch.breakpoints||{})},contentPadding:{...s.project.designSystem.contentPadding,...(patch.contentPadding||{})},spacing:{...s.project.designSystem.spacing,...(patch.spacing||{})},typography:{...s.project.designSystem.typography,...(patch.typography||{})}}; return commit(s, ensureResponsiveProject({...s.project,designSystem})); }),
   setMotionSystem: patch => set(s => commit(s, normalizeMotionProject({ ...s.project, motionSystem: { ...s.project.motionSystem, ...patch } }))),
   setSeo: patch => set(s => commit(s, { ...s.project, seo: { ...s.project.seo, ...patch } })),
+  setSecurity: patch => set(s => commit(s, { ...s.project, security: { ...s.project.security, ...patch } })),
   updatePageSeo: (id, patch) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, seo: { ...defaultPageSeo(p.name), ...(p.seo || {}), ...patch } } : p) })),
   applyMotionDefaults: () => set(s => commit(s, normalizeMotionProject(s.project))),
   applyResponsiveDefaults: () => set(s => commit(s, ensureResponsiveProject(s.project))),

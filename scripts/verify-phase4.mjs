@@ -4,6 +4,8 @@ const catalog=read('src/templates/prompt-catalog.ts');
 const catalogCount=(catalog.match(/"sourceLine":/g)||[]).length;
 const renderer=read('src/components/NodeRenderer.tsx');
 const exporter=read('src/lib/exporter.ts');
+const codegen=read('src/lib/react-source-codegen.ts');
+const exportSource=exporter+codegen;
 const adapter=read('src/lib/prompt-adapter.ts');
 const checks=[
  ['version 0.7+',/\"version\": \"(?:0\.(?:[7-9]|[1-9]\d)\.|[1-9][0-9]*\.)/.test(read('package.json'))],
@@ -20,13 +22,13 @@ const checks=[
  ['multi page templates',read('src/templates/site-templates.ts').includes('siteTemplateRegistry')],
  ['project imported blocks',read('src/types.ts').includes('importedBlocks: ImportedBlock[]')],
  ['theme canvas vars',read('src/components/Canvas.tsx').includes('themeVars(project.theme)')],
- ['theme export vars',exporter.includes('function themeVars(t:any)')],
+ ['theme export vars',exportSource.includes('function themeVars(t:any)')],
  ['dependency manifest',exporter.includes('buildExportManifest')&&exporter.includes('nila.dependencies.json')],
  ['phase 3 shortcuts preserved',read('src/App.tsx').includes('useEditorShortcuts')&&fs.existsSync('src/hooks/useEditorShortcuts.ts')],
  ['sandboxed html editor',renderer.includes('sandbox=""')&&!renderer.includes('dangerouslySetInnerHTML')],
- ['sandboxed html export',exporter.includes("sandbox=''" )&&!exporter.includes('dangerouslySetInnerHTML')],
- ['legacy carousel compatibility',renderer.includes('node.carouselAutoplay')&&exporter.includes('node.carouselAutoplay')],
- ['legacy modal compatibility',renderer.includes('node.modalCloseOnBackdrop')&&exporter.includes('node.modalCloseOnBackdrop')],
+ ['sandboxed html export',exportSource.includes("sandbox=''" )&&!exportSource.includes('dangerouslySetInnerHTML')],
+ ['legacy carousel compatibility',renderer.includes('node.carouselAutoplay')&&exportSource.includes('node.carouselAutoplay')],
+ ['legacy modal compatibility',renderer.includes('node.modalCloseOnBackdrop')&&exportSource.includes('node.modalCloseOnBackdrop')],
  ['phase 4 roadmap complete',read('docs/ROADMAP.md').includes('Phase 4 — Block and template engine ✅')]
 ];
 for(const [name,ok] of checks) console.log(`${ok?'✓':'✗'} ${name}`);

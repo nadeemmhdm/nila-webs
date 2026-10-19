@@ -8,6 +8,8 @@ const props=read('src/components/PropertiesPanel.tsx');
 const panel=read('src/components/MotionStudioPanel.tsx');
 const sidebar=read('src/components/LeftSidebar.tsx');
 const exporter=read('src/lib/exporter.ts');
+const codegen=read('src/lib/react-source-codegen.ts');
+const exportSource=exporter+codegen;
 const css=read('src/styles.css');
 const storage=read('src/lib/project-storage.ts');
 const roadmap=read('docs/ROADMAP.md');
@@ -26,7 +28,7 @@ const checks=[
  ['motion studio panel',sidebar.includes('MotionStudioPanel')&&panel.includes('Motion Studio')],
  ['motion audit',motion.includes('auditMotionProject')&&panel.includes('motion ready')],
  ['reduced motion',css.includes('prefers-reduced-motion')&&renderer.includes('reducedMotion')],
- ['export motion parity',exporter.includes('IntersectionObserver')&&exporter.includes('timelineStagger')&&exporter.includes('--nw-parallax-y')],
+ ['export motion parity',exportSource.includes('IntersectionObserver')&&exportSource.includes('timelineStagger')&&exportSource.includes('--nw-parallax-y')],
  ['motion normalization',motion.includes('normalizeMotionProject')&&storage.includes('normalizeMotionProject')],
  ['phase 6 roadmap complete',roadmap.includes('## Phase 6 — Motion and interaction studio ✅')]
 ];

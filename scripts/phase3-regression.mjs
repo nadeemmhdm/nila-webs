@@ -6,6 +6,7 @@ const renderer = read("src/components/NodeRenderer.tsx");
 const properties = read("src/components/PropertiesPanel.tsx");
 const elements = read("src/templates/phase3-elements.ts");
 const exporter = read("src/lib/exporter.ts");
+const codegen = read("src/lib/react-source-codegen.ts");
 const store = read("src/store/builder.ts");
 const shortcuts = read("src/hooks/useEditorShortcuts.ts");
 
@@ -21,7 +22,7 @@ const checks = [
   ["accessibility controls", properties.includes("Accessibility") && renderer.includes('"aria-label": node.ariaLabel')],
   ["synced reusable components", hasLegacySymbolSync || hasComponentRegistrySync],
   ["carousel behavior", hasCarouselControls],
-  ["export parity", exporter.includes("case 'html'") && exporter.includes("node.carouselAutoplay") && exporter.includes("node.inputType")],
+  ["export parity", (exporter+codegen).includes("case 'html'") && (exporter+codegen).includes("node.carouselAutoplay") && (exporter+codegen).includes("node.inputType")],
   ["keyboard shortcuts", shortcuts.includes('key === "x"') && shortcuts.includes('key === "d"')],
   ["element registry", hasAdvancedRegistry]
 ];

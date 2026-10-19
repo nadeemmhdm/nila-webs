@@ -6,6 +6,7 @@ import { defaultTheme } from "../templates/themes";
 import { defaultDesignSystem, ensureResponsiveProject } from "./design-system";
 import { defaultMotionSystem, normalizeMotionProject } from "./motion";
 import { defaultPageSeo, defaultSeoSettings, normalizePageSeo, normalizePath, normalizeSeoSettings } from "./site-settings";
+import { defaultSecuritySettings, normalizeSecuritySettings } from "./discoverability";
 
 const INDEX_KEY = "nila-webs-project-index-v1";
 const ACTIVE_KEY = "nila-webs-active-project-v1";
@@ -36,9 +37,10 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
     designSystem: raw.designSystem && typeof raw.designSystem === "object" ? { ...structuredClone(defaultDesignSystem), ...(raw.designSystem as any), breakpoints:{...defaultDesignSystem.breakpoints,...((raw.designSystem as any).breakpoints||{})}, contentPadding:{...defaultDesignSystem.contentPadding,...((raw.designSystem as any).contentPadding||{})}, spacing:{...defaultDesignSystem.spacing,...((raw.designSystem as any).spacing||{})}, typography:{...defaultDesignSystem.typography,...((raw.designSystem as any).typography||{})} } : structuredClone(defaultDesignSystem),
     motionSystem: raw.motionSystem && typeof raw.motionSystem === "object" ? { ...structuredClone(defaultMotionSystem), ...(raw.motionSystem as any) } : structuredClone(defaultMotionSystem),
     seo: normalizeSeoSettings(raw.seo as any, typeof raw.name === "string" && raw.name ? raw.name : "Untitled Project"),
+    security: normalizeSecuritySettings(raw.security as any),
     createdAt,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : createdAt,
-    schemaVersion: 9
+    schemaVersion: 10
   };
   return normalizeMotionProject(ensureResponsiveProject(project));
 }
@@ -51,8 +53,8 @@ export function createProjectModel(name = "Untitled Project", description = "", 
   return {
     id: uid("project"), name: name.trim() || "Untitled Project", description: description.trim(), templateId,
     pages, activePageId: pages[0].id, globalNavbar: built?.globalNavbar || createDefaultNavbar(), globalFooter: built?.globalFooter || createDefaultFooter(), assets: [], components: [], importedBlocks: [],
-    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [], designSystem: structuredClone(defaultDesignSystem), motionSystem: structuredClone(defaultMotionSystem), seo: defaultSeoSettings(name.trim() || "Untitled Project"),
-    createdAt: now, updatedAt: now, schemaVersion: 9
+    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [], designSystem: structuredClone(defaultDesignSystem), motionSystem: structuredClone(defaultMotionSystem), seo: defaultSeoSettings(name.trim() || "Untitled Project"), security: structuredClone(defaultSecuritySettings),
+    createdAt: now, updatedAt: now, schemaVersion: 10
   };
 }
 

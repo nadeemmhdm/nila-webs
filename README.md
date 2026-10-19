@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v1.0.0 (Phases 6 and 7 complete)
+## Current build — v1.2.0 (Real React/Vite source export milestone)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
@@ -125,3 +125,13 @@ Some starter concepts and block adapters are derived from user-supplied MIT-lice
 ## License
 
 Nila Webs source is available under the MIT License. See [`LICENSE`](LICENSE).
+
+
+## Real React + Vite Source Output
+
+Nila Webs now exports finished websites as a real source tree rather than a data-driven `site.json` bundle. Multi-page projects generate `src/pages/`, top-level page blocks generate `src/sections/`, reusable components generate `src/components/generated/`, imported prompt/code adapters generate `src/imported/`, and theme/motion/responsive tokens generate `src/theme/`. The only HTML document is Vite's required bootstrap `index.html`; website pages themselves are React/TSX modules.
+
+Finished projects can be downloaded as a ZIP or published directly to an existing/new GitHub repository through the GitHub button in the editor. GitHub tokens are held only in dialog memory and are not persisted.
+
+## Phase 8 — Discoverability & Security Center
+SEO/AEO/GEO scoring, editable robots.txt and llms.txt, JSON-LD entity metadata, security headers, RFC 9116 security.txt, clean URL export presets and publish-readiness audits.

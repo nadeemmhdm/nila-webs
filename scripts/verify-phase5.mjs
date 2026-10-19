@@ -1,9 +1,10 @@
 import fs from "node:fs";
 const read=p=>fs.readFileSync(p,"utf8");
 const pkg=read("package.json"),types=read("src/types.ts"),design=read("src/lib/design-system.ts"),store=read("src/store/builder.ts"),canvas=read("src/components/Canvas.tsx"),topbar=read("src/components/Topbar.tsx"),props=read("src/components/PropertiesPanel.tsx"),theme=read("src/components/ThemePanel.tsx"),renderer=read("src/components/NodeRenderer.tsx"),exporter=read("src/lib/exporter.ts"),storage=read("src/lib/project-storage.ts"),roadmap=read("docs/ROADMAP.md"),styles=read("src/styles.css")+read("src/phase4.css");
+const codegen=read("src/lib/react-source-codegen.ts"),exportSource=exporter+codegen;
 const checks=[
  ["version 0.8+",/"version": "(?:0\.[89]\.0|1\.)/.test(pkg)],
- ["schema v7+",/schemaVersion: (?:7|8|9);/.test(types)&&types.includes('interface DesignSystem')],
+ ["schema v7+",/schemaVersion: (?:[7-9]|[1-9][0-9]+);/.test(types)&&types.includes('interface DesignSystem')],
  ["desktop default",store.includes('viewport: "desktop"')&&store.includes('viewport: "desktop", past: []')],
  ["three previews",topbar.includes('>Desktop</span>')&&topbar.includes('>Tablet</span>')&&topbar.includes('>Mobile</span>')],
  ["configurable preview widths",canvas.includes('previewWidth(project.designSystem,viewport)')&&topbar.includes('previewTablet')&&topbar.includes('previewMobile')],
@@ -17,9 +18,9 @@ const checks=[
  ["typography tokens",types.includes('typography: { xs:string')&&theme.includes('Typography scale')],
  ["all renderer nodes share resolver",renderer.includes('const style = toCss(resolveStyle(node, viewport));')],
  ["themes share responsive vars",canvas.includes('designSystemVars(project.designSystem,viewport)')],
- ["export dynamic breakpoints",exporter.includes('d.mobileMax??639')&&exporter.includes('d.tabletMax??1023')],
- ["export cascade parity",exporter.includes("node.responsive?.tablet||{}),...(node.responsive?.mobile||{})")],
- ["export design tokens",exporter.includes('function designVars')&&exporter.includes("'--nw-space-md'" )],
+ ["export dynamic breakpoints",exportSource.includes('d.mobileMax??639')&&exportSource.includes('d.tabletMax??1023')],
+ ["export cascade parity",exportSource.includes("node.responsive?.tablet||{}),...(node.responsive?.mobile||{})")],
+ ["export design tokens",exportSource.includes('function designVars')&&exportSource.includes("'--nw-space-md'" )],
  ["mobile component hardening",exporter.includes('@media(max-width:639px)')&&exporter.includes('.nw-tab-list button{white-space:nowrap}')&&styles.includes('@container (max-width:640px)')],
  ["preview width preserved",!styles.includes('.workspace.full-preview .canvas-frame{width:100%!important')],
  ["phase 5 roadmap complete",roadmap.includes('## Phase 5 — Responsive design system ✅')]

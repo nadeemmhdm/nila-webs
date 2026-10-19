@@ -1,6 +1,6 @@
 [package]
 name = "nila-webs"
-version = "1.0.0"
+version = "1.2.0"
 description = "Windows-first visual React + Vite website builder"
 authors = ["Nila Webs contributors"]
 edition = "2021"
