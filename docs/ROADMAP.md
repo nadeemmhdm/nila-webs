@@ -3,8 +3,8 @@
 ## Phase 1 — Core visual builder ✅
 Desktop shell, React/Vite editor, multi-page model, global navbar/footer, base properties, initial sections, editable project file and React/Vite export.
 
-## Phase 2 — Professional editor UX 🟣 in progress
-MIT App Inventor-style activity bar, collapsible panels, Layers tree, live interactions, full preview, responsive properties, visibility per breakpoint, undo/redo, copy/duplicate, nested drag-and-drop and better editor UI.
+## Phase 2 — Professional workspace & editor UX 🟣 in progress
+Splash/boot experience, projects dashboard, recent/all projects, blank/template project creation, MIT App Inventor-style activity bar, collapsible panels, Layers tree, Assets library, image/video upload or URL sources, live interactions, full preview, responsive properties, visibility per breakpoint, undo/redo, copy/duplicate, nested drag-and-drop and improved editor UI. Uploaded project media exports to `public/assets/`.
 
 ## Phase 3 — Complete element system
 Advanced form controls, badges, lists, icons, videos, embeds, tabs, accordion, carousel, modal, table, maps, social icons and reusable component symbols.
@@ -21,8 +21,8 @@ Scroll reveal, hover interactions, timelines, parallax, sticky sections, state t
 ## Phase 7 — Navigation, forms and SEO
 Visual link manager, anchors, menus, form integrations, validation, metadata, Open Graph, favicon, sitemap, robots and accessibility checks.
 
-## Phase 8 — Local asset and project workspace
-Native file dialogs, local image/video/font assets, project folders, backups, recovery, autosave versions and strict project-folder access boundaries.
+## Phase 8 — Native project folders & recovery
+Native Windows file dialogs, optional project folders, font assets, backup/recovery, autosave versions and strict project-folder access boundaries. Phase 2 already provides the browser/WebView IndexedDB media library and `public/assets/` export pipeline.
 
 ## Phase 9 — Production export pipeline
 Dependency resolver, shadcn-compatible generated structure, Tailwind 4 export option, build validation, deployment presets and export diagnostics.
