@@ -18,8 +18,8 @@ Completed in v0.8.0. Desktop is the default/base preview, with configurable Tabl
 ## Phase 6 — Motion and interaction studio ✅
 Completed in v0.9.0. Adds a project Motion Studio, IntersectionObserver scroll reveal with repeat/threshold controls, expanded entrance/hover presets, child timeline sequencing and reverse order, clamped parallax, sticky nodes, configurable easing/state transitions, project motion defaults/auditing, and reduced-motion modes. Editor Live/Preview and exported React/Vite sites use the same motion model.
 
-## Phase 7 — Navigation, forms and SEO
-Visual link manager, anchors, menus, form integrations, validation, metadata, Open Graph, favicon, sitemap, robots and accessibility checks.
+## Phase 7 — Navigation, forms and SEO ✅
+Completed in v1.0.0. Adds the Site / Nav / SEO workspace, typed page/anchor/external/email/phone link targets, project navbar link management, element anchors, endpoint-based form integrations with validation/status/honeypot support, global and per-page SEO metadata, Open Graph, favicon/canonical controls, sitemap.xml and robots.txt generation, runtime page metadata updates, and a combined SEO/accessibility audit. Editor preview and standalone React/Vite export share navigation, anchors, forms and metadata behavior.
 
 ## Phase 8 — Native project folders & recovery
 Native Windows file dialogs, optional project folders, font assets, backup/recovery, autosave versions and strict project-folder access boundaries. Phase 2 already provides the browser/WebView IndexedDB media library and `public/assets/` export pipeline.

@@ -20,6 +20,8 @@ export type InputKind = "text" | "email" | "password" | "number" | "date" | "dat
 export type InputType = InputKind;
 export type ListStyle = "disc" | "decimal" | "none";
 export type FormMethod = "get" | "post";
+export type LinkKind = "page" | "anchor" | "external" | "email" | "phone";
+export type FormProvider = "none" | "custom" | "formspree";
 export type PromptArtifactType = "section" | "component" | "theme";
 
 export interface ThemeColors {
@@ -95,6 +97,11 @@ export interface TableModel { headers: string[]; rows: string[][]; caption?: str
 export interface CarouselSlide { src: string; alt?: string; caption?: string; }
 export interface SocialLink { label: string; href: string; }
 
+export interface PageSeo { title: string; description: string; image: string; canonical: string; noIndex: boolean; }
+export interface SeoSettings { siteTitle: string; titleTemplate: string; description: string; siteUrl: string; language: string; defaultImage: string; favicon: string; index: boolean; follow: boolean; generateSitemap: boolean; generateRobots: boolean; }
+export interface SiteAuditIssue { severity: "error" | "warning" | "info"; code: string; message: string; pageId?: string; nodeId?: string; }
+export interface SiteAuditResult { score: number; issues: SiteAuditIssue[]; }
+
 export interface BuilderNode {
   id: string;
   type: NodeType;
@@ -103,6 +110,9 @@ export interface BuilderNode {
   src?: string;
   alt?: string;
   href?: string;
+  linkKind?: LinkKind;
+  anchorId?: string;
+  download?: boolean;
   target?: "_self" | "_blank";
   placeholder?: string;
   options?: string[];
@@ -123,6 +133,9 @@ export interface BuilderNode {
   step?: number;
   formAction?: string;
   formMethod?: FormMethod;
+  formProvider?: FormProvider;
+  formSuccessMessage?: string;
+  formHoneypot?: string;
   items?: InteractiveItem[];
   table?: TableModel;
   slides?: CarouselSlide[];
@@ -210,6 +223,7 @@ export interface BuilderPage {
   nodes: BuilderNode[];
   showNavbar: boolean;
   showFooter: boolean;
+  seo?: PageSeo;
 }
 
 export type AssetKind = "image" | "video";
@@ -243,9 +257,10 @@ export interface BuilderProject {
   favoriteLibraryIds: string[];
   designSystem: DesignSystem;
   motionSystem: MotionSystem;
+  seo: SeoSettings;
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 8;
+  schemaVersion: 9;
 }
 
 export interface ProjectSummary {

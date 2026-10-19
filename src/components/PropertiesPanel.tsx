@@ -2,9 +2,10 @@ import { useRef } from "react";
 import type { ReactNode } from "react";
 import { ClipboardCopy, Copy, Eye, EyeOff, FolderOpen, Link2, RefreshCw, RotateCcw, Save, Trash2, Unlink, Upload } from "lucide-react";
 import { getNodeAnywhere, useBuilder } from "../store/builder";
-import type { AnimationName, AssetKind, BuilderNode, HoverAnimation, InputKind, MotionTrigger, NodeStyle, TimelineOrder } from "../types";
+import type { AnimationName, AssetKind, BuilderNode, FormProvider, HoverAnimation, InputKind, LinkKind, MotionTrigger, NodeStyle, TimelineOrder } from "../types";
 import { resolveStyle } from "../lib/nodes";
 import { createUploadedAsset } from "../lib/assets";
+import { collectPageAnchors, normalizeAnchor } from "../lib/site-settings";
 
 const sizeFields: Array<[keyof NodeStyle, string]> = [["width","Width"],["maxWidth","Max width"],["height","Height"],["minHeight","Min height"]];
 const spacingFields: Array<[keyof NodeStyle, string]> = [["padding","Padding"],["margin","Margin"],["gap","Gap"]];
@@ -33,7 +34,8 @@ export default function PropertiesPanel() {
       {node.type === "input" && <Field label="Input type"><select value={node.inputType || "text"} onChange={e => set("inputType", e.target.value as InputKind)}>{inputKinds.map(kind => <option key={kind}>{kind}</option>)}</select></Field>}
       {["select","list","radio"].includes(node.type) && <Field label="Options"><textarea value={(node.options || []).join("\n")} onChange={e => set("options", e.target.value.split("\n").map(v => v.trim()).filter(Boolean))}/></Field>}
       {node.type === "list" && <Field label="List style"><select value={node.listStyle === "none" ? "none" : (node.ordered ?? node.listStyle === "decimal") ? "ordered" : "unordered"} onChange={e => { const value=e.target.value; set("ordered", value === "ordered"); set("listStyle", value === "none" ? "none" : value === "ordered" ? "decimal" : "disc"); }}><option value="unordered">Bullets</option><option value="ordered">Numbered</option><option value="none">No marker</option></select></Field>}
-      {["button","link"].includes(node.type) && <><Field label="Link"><input value={node.href || ""} onChange={e => set("href", e.target.value)} placeholder="/about or https://..."/></Field><Field label="Open in"><select value={node.target || "_self"} onChange={e => set("target", e.target.value as "_self"|"_blank")}><option value="_self">Same tab</option><option value="_blank">New tab</option></select></Field></>}
+      {["button","link"].includes(node.type) && <LinkTargetEditor node={node}/>}
+      {!global && <Field label="Anchor ID"><input value={node.anchorId || ""} onChange={e => set("anchorId",normalizeAnchor(e.target.value))} placeholder="features, pricing, contact"/></Field>}
       {["checkbox","switch"].includes(node.type) && <Field label="Default state"><label className="toggle-line"><input type="checkbox" checked={!!node.checked} onChange={e => set("checked",e.target.checked)}/><span>{node.checked ? "On / checked" : "Off / unchecked"}</span></label></Field>}
       {node.type === "range" && <NumberRangeFields node={node}/>} 
       {["embed","map"].includes(node.type) && <><Field label="Embed URL"><textarea value={node.src || ""} onChange={e => set("src",e.target.value)} placeholder="https://..."/></Field><Field label="Frame title"><input value={node.alt || ""} onChange={e => set("alt",e.target.value)}/></Field></>}
@@ -49,7 +51,7 @@ export default function PropertiesPanel() {
     </PropertySection>
 
     {(formField || node.type === "form") && <PropertySection title="Form & validation">
-      {node.type === "form" ? <><Field label="Submit URL"><input value={node.formAction || ""} onChange={e => set("formAction",e.target.value)} placeholder="https://... or /api/contact"/></Field><Field label="Method"><select value={node.formMethod || "post"} onChange={e => set("formMethod",e.target.value as "get"|"post")}><option value="post">POST</option><option value="get">GET</option></select></Field></> : <>
+      {node.type === "form" ? <><Field label="Provider"><select value={node.formProvider || "none"} onChange={e=>set("formProvider",e.target.value as FormProvider)}><option value="none">Preview only</option><option value="custom">Custom endpoint</option><option value="formspree">Formspree endpoint</option></select></Field><Field label="Submit URL"><input value={node.formAction || ""} onChange={e => set("formAction",e.target.value)} placeholder="https://... endpoint"/></Field><Field label="Method"><select value={node.formMethod || "post"} onChange={e => set("formMethod",e.target.value as "get"|"post")}><option value="post">POST</option><option value="get">GET</option></select></Field><Field label="Success message"><input value={node.formSuccessMessage || "Thanks! Your form was submitted."} onChange={e=>set("formSuccessMessage",e.target.value)}/></Field><Field label="Honeypot name"><input value={node.formHoneypot || "_gotcha"} onChange={e=>set("formHoneypot",e.target.value)} placeholder="_gotcha"/></Field></> : <>
         <Field label="Field name"><input value={node.nameAttr || ""} onChange={e => set("nameAttr",e.target.value)}/></Field>
         {!(["range","file"].includes(node.type)) && <Field label="Default value"><input value={node.value || ""} onChange={e => set("value",e.target.value)}/></Field>}
         <Field label="Required"><label className="toggle-line"><input type="checkbox" checked={!!node.required} onChange={e => set("required",e.target.checked)}/><span>{node.required ? "Required" : "Optional"}</span></label></Field>
@@ -130,6 +132,20 @@ function safeColor(value:string,fallback:string){return /^#[0-9a-f]{6}$/i.test(v
 function PropertySection({title,children}:{title:string;children:ReactNode}){return <section className="property-section"><h3>{title}</h3>{children}</section>}
 function Field({label,children}:{label:string;children:ReactNode}){return <label className="property-field"><span>{label}</span><div>{children}</div></label>}
 function StyleInput({label,value,onChange}:{label:string;value:string;onChange:(v:string)=>void}){return <Field label={label}><input value={value} onChange={e => onChange(e.target.value)}/></Field>}
+
+function LinkTargetEditor({ node }: { node: BuilderNode }) {
+  const { project, updateNode } = useBuilder();
+  const page = project.pages.find(p=>p.id===project.activePageId) || project.pages[0];
+  const anchors = page ? collectPageAnchors(page) : [];
+  const kind: LinkKind = node.linkKind || (node.href?.startsWith("#") ? "anchor" : node.href?.startsWith("mailto:") ? "email" : node.href?.startsWith("tel:") ? "phone" : node.href?.startsWith("/") ? "page" : "external");
+  const setKind=(next:LinkKind)=>{ const href = next==="page" ? (project.pages[0]?.path||"/") : next==="anchor" ? (anchors[0]?`#${anchors[0].id}`:"#section") : next==="email" ? "mailto:" : next==="phone" ? "tel:" : "https://"; updateNode(node.id,{linkKind:next,href}); };
+  return <>
+    <Field label="Link type"><select value={kind} onChange={e=>setKind(e.target.value as LinkKind)}><option value="page">Page</option><option value="anchor">Anchor</option><option value="external">External URL</option><option value="email">Email</option><option value="phone">Phone</option></select></Field>
+    {kind==="page" ? <Field label="Page"><select value={node.href || "/"} onChange={e=>updateNode(node.id,{href:e.target.value})}>{project.pages.map(p=><option key={p.id} value={p.path}>{p.name} · {p.path}</option>)}</select></Field> : kind==="anchor" ? <Field label="Anchor"><select value={(node.href||"").replace(/^#/,"")} onChange={e=>updateNode(node.id,{href:`#${e.target.value}`})}><option value="">Choose anchor…</option>{anchors.map(a=><option key={a.nodeId} value={a.id}>{a.name} · #{a.id}</option>)}</select></Field> : <Field label="Target"><input value={node.href || ""} onChange={e=>updateNode(node.id,{href:e.target.value})} placeholder={kind==="email"?"mailto:hello@example.com":kind==="phone"?"tel:+123456789":"https://..."}/></Field>}
+    <Field label="Open in"><select value={node.target || "_self"} onChange={e=>updateNode(node.id,{target:e.target.value as "_self"|"_blank"})}><option value="_self">Same tab</option><option value="_blank">New tab</option></select></Field>
+    <Field label="Download"><label className="toggle-line"><input type="checkbox" checked={!!node.download} onChange={e=>updateNode(node.id,{download:e.target.checked})}/><span>{node.download?"Download link":"Normal link"}</span></label></Field>
+  </>;
+}
 
 function NumberRangeFields({ node }: { node: BuilderNode }) {
   const { updateNode } = useBuilder();

@@ -12,8 +12,8 @@ const css=read('src/styles.css');
 const storage=read('src/lib/project-storage.ts');
 const roadmap=read('docs/ROADMAP.md');
 const checks=[
- ['version 0.9.0',pkg.version==='0.9.0'],
- ['schema v8',types.includes('schemaVersion: 8')&&storage.includes('schemaVersion: 8')],
+ ['version 0.9+',Number(pkg.version.split('.')[0])>0||Number(pkg.version.split('.')[1])>=9],
+ ['schema v8+',/schemaVersion: (8|9|[1-9][0-9]+)/.test(types)&&/schemaVersion: (8|9|[1-9][0-9]+)/.test(storage)],
  ['motion system schema',types.includes('interface MotionSystem')&&types.includes('motionSystem: MotionSystem')],
  ['scroll reveal observer',renderer.includes('IntersectionObserver')&&renderer.includes('motion-pending')],
  ['repeat reveal',renderer.includes('node.motionRepeat')],

@@ -5,6 +5,7 @@ import { buildSiteTemplate } from "../templates/site-templates";
 import { defaultTheme } from "../templates/themes";
 import { defaultDesignSystem, ensureResponsiveProject } from "./design-system";
 import { defaultMotionSystem, normalizeMotionProject } from "./motion";
+import { defaultPageSeo, defaultSeoSettings, normalizePageSeo, normalizePath, normalizeSeoSettings } from "./site-settings";
 
 const INDEX_KEY = "nila-webs-project-index-v1";
 const ACTIVE_KEY = "nila-webs-active-project-v1";
@@ -12,9 +13,10 @@ const LEGACY_KEY = "nila-webs-project-v2";
 const keyFor = (id: string) => `nila-webs-project:${id}`;
 
 export function normalizeProject(raw: Partial<BuilderProject> & Record<string, unknown>): BuilderProject {
-  const pages = Array.isArray(raw.pages) && raw.pages.length ? raw.pages as BuilderPage[] : [{
-    id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true
+  const inputPages = Array.isArray(raw.pages) && raw.pages.length ? raw.pages as BuilderPage[] : [{
+    id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true, seo: defaultPageSeo("Home")
   }];
+  const pages = inputPages.map(page => ({ ...page, path: normalizePath(page.path), seo: normalizePageSeo(page) }));
   const createdAt = typeof raw.createdAt === "string" ? raw.createdAt : new Date().toISOString();
   const project: BuilderProject = {
     id: typeof raw.id === "string" && raw.id ? raw.id : uid("project"),
@@ -33,9 +35,10 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
     favoriteLibraryIds: Array.isArray(raw.favoriteLibraryIds) ? raw.favoriteLibraryIds.filter((id): id is string => typeof id === "string") : [],
     designSystem: raw.designSystem && typeof raw.designSystem === "object" ? { ...structuredClone(defaultDesignSystem), ...(raw.designSystem as any), breakpoints:{...defaultDesignSystem.breakpoints,...((raw.designSystem as any).breakpoints||{})}, contentPadding:{...defaultDesignSystem.contentPadding,...((raw.designSystem as any).contentPadding||{})}, spacing:{...defaultDesignSystem.spacing,...((raw.designSystem as any).spacing||{})}, typography:{...defaultDesignSystem.typography,...((raw.designSystem as any).typography||{})} } : structuredClone(defaultDesignSystem),
     motionSystem: raw.motionSystem && typeof raw.motionSystem === "object" ? { ...structuredClone(defaultMotionSystem), ...(raw.motionSystem as any) } : structuredClone(defaultMotionSystem),
+    seo: normalizeSeoSettings(raw.seo as any, typeof raw.name === "string" && raw.name ? raw.name : "Untitled Project"),
     createdAt,
     updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : createdAt,
-    schemaVersion: 8
+    schemaVersion: 9
   };
   return normalizeMotionProject(ensureResponsiveProject(project));
 }
@@ -43,13 +46,13 @@ export function normalizeProject(raw: Partial<BuilderProject> & Record<string, u
 export function createProjectModel(name = "Untitled Project", description = "", templateId = "blank"): BuilderProject {
   const now = new Date().toISOString();
   const built = templateId === "blank" ? undefined : buildSiteTemplate(templateId);
-  const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true };
+  const home: BuilderPage = { id: uid("page"), name: "Home", path: "/", nodes: [], showNavbar: true, showFooter: true, seo: defaultPageSeo("Home") };
   const pages = built?.pages || [home];
   return {
     id: uid("project"), name: name.trim() || "Untitled Project", description: description.trim(), templateId,
     pages, activePageId: pages[0].id, globalNavbar: built?.globalNavbar || createDefaultNavbar(), globalFooter: built?.globalFooter || createDefaultFooter(), assets: [], components: [], importedBlocks: [],
-    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [], designSystem: structuredClone(defaultDesignSystem), motionSystem: structuredClone(defaultMotionSystem),
-    createdAt: now, updatedAt: now, schemaVersion: 8
+    theme: built?.theme || structuredClone(defaultTheme), savedThemes: [], favoriteLibraryIds: [], designSystem: structuredClone(defaultDesignSystem), motionSystem: structuredClone(defaultMotionSystem), seo: defaultSeoSettings(name.trim() || "Untitled Project"),
+    createdAt: now, updatedAt: now, schemaVersion: 9
   };
 }
 

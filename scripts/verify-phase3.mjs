@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 const read = path => fs.readFileSync(path, 'utf8');
 const checks = [
-  ['package version', /\"version\"\s*:\s*\"0\.(?:[5-9]|[1-9][0-9])\./.test(read('package.json'))],
+  ['package version', /\"version\"\s*:\s*\"(?:0\.(?:[5-9]|[1-9][0-9])\.|[1-9][0-9]*\.)/.test(read('package.json'))],
   ['schema v4+', /schemaVersion:\s*[4-9]/.test(read('src/types.ts'))],
   ['component registry', read('src/types.ts').includes('components: SavedComponent[]')],
   ['component save', read('src/store/builder.ts').includes('saveNodeAsComponent')],

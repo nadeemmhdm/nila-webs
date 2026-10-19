@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.8.0 (Phase 5 complete)
+## Current build — v1.0.0 (Phases 6 and 7 complete)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
@@ -40,6 +40,10 @@
 
 - Phase 6 Motion Studio with scroll reveal, parallax, sticky elements, child timeline stagger/order, transition easing, expanded entrance/hover presets and reduced-motion controls.
 - Motion behavior is shared by Live/Preview and standalone React/Vite exports.
+
+- Phase 7 Site / Nav / SEO workspace with page/anchor/external/email/phone links, navbar link manager and element anchor IDs.
+- Endpoint-based form submission with browser validation, success/error states and honeypot support.
+- Global + per-page SEO, Open Graph, favicon/canonical settings, sitemap.xml/robots.txt export and site accessibility/SEO audit.
 - Phase 4 Prompt Adapter Engine converts pasted Shadcn/React/TSX prompts into safe editable builder nodes without executing arbitrary code.
 - 78 user-supplied prompt/catalog variants are indexed in the Sections library with extracted copy, media and animation hints.
 - Project theme system with preset palettes, typography, radius/shadow tokens, live CSS variables and current-page restyling.

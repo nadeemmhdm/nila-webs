@@ -6,7 +6,7 @@ const renderer=read('src/components/NodeRenderer.tsx');
 const exporter=read('src/lib/exporter.ts');
 const adapter=read('src/lib/prompt-adapter.ts');
 const checks=[
- ['version 0.7+',/\"version\": \"0\.(?:[7-9]|[1-9]\d)\./.test(read('package.json'))],
+ ['version 0.7+',/\"version\": \"(?:0\.(?:[7-9]|[1-9]\d)\.|[1-9][0-9]*\.)/.test(read('package.json'))],
  ['schema v6+',/schemaVersion:\s*(?:[6-9]|[1-9]\d)/.test(read('src/types.ts'))],
  ['theme schema',read('src/types.ts').includes('interface ProjectTheme')],
  ['prompt adapter',adapter.includes('promptToNode')&&adapter.includes('analyzePromptSource')],

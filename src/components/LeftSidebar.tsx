@@ -1,4 +1,4 @@
-import { Boxes, FileCode2, FileStack, Images, Layers3, Palette, Sparkles } from "lucide-react";
+import { Boxes, FileCode2, FileStack, Images, Layers3, Palette, SearchCheck, Sparkles } from "lucide-react";
 import { useBuilder } from "../store/builder";
 import AssetsPanel from "./AssetsPanel";
 import LayersPanel from "./LayersPanel";
@@ -7,6 +7,7 @@ import PagesPanel from "./PagesPanel";
 import PromptImportPanel from "./PromptImportPanel";
 import ThemePanel from "./ThemePanel";
 import MotionStudioPanel from "./MotionStudioPanel";
+import SitePanel from "./SitePanel";
 
 export default function LeftSidebar() {
   const { sidebarTab, setSidebarTab } = useBuilder();
@@ -18,6 +19,7 @@ export default function LeftSidebar() {
       <button className={sidebarTab === "assets" ? "active" : ""} onClick={() => setSidebarTab("assets")} title="Project assets"><Images size={18}/><span>Assets</span></button>
       <button className={sidebarTab === "themes" ? "active" : ""} onClick={() => setSidebarTab("themes")} title="Theme system"><Palette size={18}/><span>Themes</span></button>
       <button className={sidebarTab === "motion" ? "active" : ""} onClick={() => setSidebarTab("motion")} title="Motion studio"><Sparkles size={18}/><span>Motion</span></button>
+      <button className={sidebarTab === "site" ? "active" : ""} onClick={() => setSidebarTab("site")} title="Navigation, forms and SEO"><SearchCheck size={18}/><span>Site</span></button>
       <button className={sidebarTab === "import" ? "active" : ""} onClick={() => setSidebarTab("import")} title="Import prompt/code"><FileCode2 size={18}/><span>Import</span></button>
     </div>
     <div className="sidebar-content">
@@ -27,6 +29,7 @@ export default function LeftSidebar() {
       {sidebarTab === "assets" && <AssetsPanel/>}
       {sidebarTab === "themes" && <ThemePanel/>}
       {sidebarTab === "motion" && <MotionStudioPanel/>}
+      {sidebarTab === "site" && <SitePanel/>}
       {sidebarTab === "import" && <PromptImportPanel/>}
     </div>
   </aside>;

@@ -18,13 +18,14 @@ const toCss = (s: BuilderNode["style"]): CSSProperties => ({
 const canNest = (node: BuilderNode) => ["container", "section", "card", "form", "navbar", "footer", "symbol", "modal"].includes(node.type);
 
 export default function NodeRenderer({ node, readOnly = false, timelineOffset = 0 }: { node: BuilderNode; readOnly?: boolean; timelineOffset?: number }) {
-  const { project, selectedId, setSelected, addNode, moveNode, viewport } = useBuilder();
+  const { project, selectedId, setSelected, addNode, moveNode, setActivePage, viewport } = useBuilder();
   const mediaSrc = useAssetSource(project, node.src);
   const [activeTab, setActiveTab] = useState(node.defaultIndex ?? 0);
   const [openAccordion, setOpenAccordion] = useState<number | null>(node.defaultIndex ?? 0);
   const [modalOpen, setModalOpen] = useState(false);
   const [switchOn, setSwitchOn] = useState(!!node.checked);
   const [slide, setSlide] = useState(0);
+  const [formStatus, setFormStatus] = useState<"idle"|"sending"|"success"|"error">("idle");
   const motionEl = useRef<HTMLElement | null>(null);
   const motionEnabled = project.motionSystem.enabled;
   const [prefersReduced, setPrefersReduced] = useState(false);
@@ -118,18 +119,34 @@ export default function NodeRenderer({ node, readOnly = false, timelineOffset = 
     draggable: !readOnly && !["navbar", "footer"].includes(node.type), onDragStart: dragStart,
     ref: (el: HTMLElement | null) => { motionEl.current = el; },
     style: { ...style, animationDuration: `${node.animationDuration ?? project.motionSystem.defaultDuration}s`, animationDelay: `${(node.animationDelay ?? 0) + timelineOffset}s`, animationTimingFunction: node.motionEasing || project.motionSystem.defaultEasing, transitionDuration: `${node.transitionDuration ?? .25}s`, transitionTimingFunction: node.transitionEasing || "ease", ...(readOnly && node.parallax && !reduced ? ({ "--nw-parallax-y": `${parallaxY}px` } as CSSProperties) : {}), ...(readOnly && node.sticky ? { position: "sticky" as const, top: node.stickyTop || "0px", zIndex: node.stickyZIndex ?? 10 } : {}) }, className,
-    "aria-label": node.ariaLabel || undefined, title: node.titleAttr || undefined, role: node.roleAttr as AriaRole | undefined, tabIndex: node.tabIndex
+    "aria-label": node.ariaLabel || undefined, title: node.titleAttr || undefined, role: node.roleAttr as AriaRole | undefined, tabIndex: node.tabIndex,
+    id: node.anchorId || undefined, "data-nw-anchor": node.anchorId || undefined
   };
   const overlay = !readOnly && selected ? <div className="selection-label"><GripVertical size={12}/>{node.name}</div> : null;
   const componentChip = !readOnly && (node.componentId || node.symbolSyncKey) ? <div className="nw-component-chip">↻ {node.componentName || "Component"}</div> : null;
   const wrap = (element: React.ReactElement) => <>{element}{componentChip}{overlay}</>;
   const interactive = readOnly;
+  const handleBuilderLink = (e: MouseEvent, href?: string) => {
+    if (!readOnly || !href) return;
+    if (href.startsWith("#")) { e.preventDefault(); const id=href.slice(1); document.getElementById(id)?.scrollIntoView({behavior: reduced ? "auto" : "smooth", block:"start"}); return; }
+    if (href.startsWith("/")) { const page=project.pages.find(p=>p.path===href); if (page) { e.preventDefault(); setActivePage(page.id); } }
+  };
+  const submitForm = async (e: React.FormEvent<HTMLFormElement>) => {
+    if (!readOnly || node.formProvider === "none" || !node.formAction) { e.preventDefault(); return; }
+    e.preventDefault(); setFormStatus("sending");
+    try {
+      const data=new FormData(e.currentTarget);
+      const response = node.formMethod === "get" ? await fetch(`${node.formAction}${node.formAction.includes("?")?"&":"?"}${new URLSearchParams(data as any)}`) : await fetch(node.formAction,{method:"POST",body:data,headers:{Accept:"application/json"}});
+      if (!response.ok) throw new Error(String(response.status));
+      setFormStatus("success"); e.currentTarget.reset();
+    } catch { setFormStatus("error"); }
+  };
 
   switch (node.type) {
     case "heading": return wrap(<h1 {...common}>{node.content}</h1>);
     case "text": return wrap(<p {...common}>{node.content}</p>);
-    case "button": return wrap(<a {...common} className={`${className} nw-button`} href={readOnly ? node.href : undefined} target={node.target} rel={node.target === "_blank" ? "noreferrer" : undefined}>{node.content}</a>);
-    case "link": return wrap(<a {...common} className={`${className} nw-link`} href={readOnly ? node.href : undefined} target={node.target} rel={node.target === "_blank" ? "noreferrer" : undefined}>{node.content}</a>);
+    case "button": return wrap(<a {...common} className={`${className} nw-button`} href={readOnly ? node.href : undefined} target={node.target} download={node.download || undefined} rel={node.target === "_blank" ? "noreferrer" : undefined} onClick={e=>handleBuilderLink(e,node.href)}>{node.content}</a>);
+    case "link": return wrap(<a {...common} className={`${className} nw-link`} href={readOnly ? node.href : undefined} target={node.target} download={node.download || undefined} rel={node.target === "_blank" ? "noreferrer" : undefined} onClick={e=>handleBuilderLink(e,node.href)}>{node.content}</a>);
     case "badge": return wrap(<span {...common} className={`${className} nw-badge`}>{node.content}</span>);
     case "image": return wrap(<img {...common} src={mediaSrc} alt={node.alt || ""} style={{ ...common.style, objectFit: "cover" }}/>);
     case "video": return wrap(<video {...common} src={mediaSrc} controls={readOnly} muted loop playsInline style={{ ...common.style, objectFit: "cover" }}/>);
@@ -155,7 +172,7 @@ export default function NodeRenderer({ node, readOnly = false, timelineOffset = 
     case "alert": return wrap(<div {...common} className={`${className} nw-alert nw-alert-${String(node.meta?.variant || "info")}`}>{node.content}</div>);
     case "progress": return wrap(<label {...common} className={`${className} nw-progress`}><span>{node.content}</span><progress value={Number(node.value || 0)} max={node.max ?? 100}/><b>{node.value || "0"}%</b></label>);
     case "rating": { const max = Math.max(1, node.max || 5); const value = Math.max(0, Math.min(max, Number(node.value || 0))); return wrap(<div {...common} className={`${className} nw-rating`} aria-label={node.ariaLabel || `${value} out of ${max} stars`}><span aria-hidden="true">{"★".repeat(Math.round(value))}{"☆".repeat(Math.max(0, max - Math.round(value)))}</span></div>); }
-    case "breadcrumb": return wrap(<nav {...common} className={`${className} nw-breadcrumb`} aria-label={node.ariaLabel || "Breadcrumb"}>{(node.links || []).map((link, i) => <span key={`${link.label}-${i}`}><a href={readOnly ? link.href : undefined}>{link.label}</a>{i < (node.links?.length || 0) - 1 && <i aria-hidden="true">/</i>}</span>)}</nav>);
+    case "breadcrumb": return wrap(<nav {...common} className={`${className} nw-breadcrumb`} aria-label={node.ariaLabel || "Breadcrumb"}>{(node.links || []).map((link, i) => <span key={`${link.label}-${i}`}><a href={readOnly ? link.href : undefined} onClick={e=>handleBuilderLink(e,link.href)}>{link.label}</a>{i < (node.links?.length || 0) - 1 && <i aria-hidden="true">/</i>}</span>)}</nav>);
     case "table": return wrap(<div {...common} className={`${className} nw-table-wrap${node.tableStriped ? " striped" : ""}${node.tableCompact ? " compact" : ""}`}><table>{node.table?.caption && <caption>{node.table.caption}</caption>}<thead><tr>{(node.table?.headers || []).map((h, i) => <th key={`${h}-${i}`} scope="col">{h}</th>)}</tr></thead><tbody>{(node.table?.rows || []).map((row, r) => <tr key={r}>{row.map((cell, c) => <td key={c}>{cell}</td>)}</tr>)}</tbody></table></div>);
     case "tabs": return wrap(<div {...common} className={`${className} nw-tabs`}><div className="nw-tab-list" role="tablist">{(node.items || []).map((item, i) => <button type="button" role="tab" aria-selected={activeTab === i} key={item.title} className={activeTab === i ? "active" : ""} disabled={!interactive} onClick={e => { e.stopPropagation(); if (interactive) setActiveTab(i); }}>{item.title}</button>)}</div><div className="nw-tab-panel" role="tabpanel">{node.items?.[activeTab]?.body || ""}</div></div>);
     case "accordion": return wrap(<div {...common} className={`${className} nw-accordion`}>{(node.items || []).map((item, i) => <div className="nw-accordion-item" key={item.title}><button type="button" aria-expanded={openAccordion === i} disabled={!interactive} onClick={e => { e.stopPropagation(); if (interactive) setOpenAccordion(v => v === i ? null : i); }}><span>{item.title}</span><b>{openAccordion === i ? "−" : "+"}</b></button>{openAccordion === i && <div className="nw-accordion-panel">{item.body}</div>}</div>)}</div>);
@@ -170,8 +187,10 @@ export default function NodeRenderer({ node, readOnly = false, timelineOffset = 
     }
     case "socials": return wrap(<div {...common} className={`${className} nw-socials`}>{(node.links || []).map(link => <a key={`${link.label}-${link.href}`} href={readOnly ? link.href : undefined} target={readOnly ? "_blank" : undefined} rel="noreferrer">{link.label}</a>)}</div>);
     case "symbol": return wrap(<div {...common} className={`${className} nw-symbol`}>{children}<div className="nw-symbol-chip">{node.componentId ? "Linked" : "Component group"}</div>{!readOnly && (!node.children || node.children.length === 0) && <div className="empty-drop">Drop component content here</div>}</div>);
+    case "navbar": return wrap(<nav {...common} aria-label={node.ariaLabel || "Main navigation"}>{children}{!!node.links?.length && <div className="nw-nav-links">{node.links.map(link=><a key={`${link.label}-${link.href}`} href={readOnly?link.href:undefined} onClick={e=>handleBuilderLink(e,link.href)}>{link.label}</a>)}</div>}</nav>);
+    case "footer": return wrap(<footer {...common}>{children}</footer>);
     case "divider": case "spacer": return wrap(<div {...common}/>);
-    case "form": return wrap(<form {...common} action={readOnly ? node.formAction || undefined : undefined} method={node.formMethod || "post"} onSubmit={e => { if (!readOnly || !node.formAction) e.preventDefault(); }}>{children}{!readOnly && (!node.children || node.children.length === 0) && <div className="empty-drop">Drop form fields here</div>}</form>);
+    case "form": return wrap(<form {...common} action={readOnly ? node.formAction || undefined : undefined} method={node.formMethod || "post"} onSubmit={submitForm}>{node.formHoneypot && <input className="nw-honeypot" type="text" name={node.formHoneypot} tabIndex={-1} autoComplete="off"/>}{children}{formStatus==="sending"&&<div className="nw-form-status" role="status">Sending…</div>}{formStatus==="success"&&<div className="nw-form-status success" role="status">{node.formSuccessMessage || "Thanks! Your form was submitted."}</div>}{formStatus==="error"&&<div className="nw-form-status error" role="alert">Submission failed. Please try again.</div>}{!readOnly && (!node.children || node.children.length === 0) && <div className="empty-drop">Drop form fields here</div>}</form>);
     default: return wrap(<div {...common}>{children}{!readOnly && canNest(node) && (!node.children || node.children.length === 0) ? <div className="empty-drop">Drop elements here</div> : null}</div>);
   }
 }

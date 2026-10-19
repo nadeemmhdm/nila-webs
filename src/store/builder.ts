@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import type { BuilderNode, BuilderPage, BuilderProject, DesignSystem, ImportedBlock, MotionSystem, NodeStyle, ProjectAsset, ProjectTheme, SavedComponent, Viewport } from "../types";
+import type { BuilderNode, BuilderPage, BuilderProject, DesignSystem, ImportedBlock, MotionSystem, NodeStyle, PageSeo, ProjectAsset, ProjectTheme, SavedComponent, SeoSettings, Viewport } from "../types";
 import { appendNode, cloneNode, findNode, mapNode, moveNode as moveTreeNode, removeNode, reorderNode, uid } from "../lib/nodes";
 import { createProjectModel, loadInitialProject, normalizeProject, saveProject } from "../lib/project-storage";
 import { reconvertImportedBlock as reconvertBlock } from "../lib/prompt-adapter";
 import { buildSiteTemplate } from "../templates/site-templates";
 import { ensureResponsiveNode, ensureResponsiveProject } from "../lib/design-system";
 import { normalizeMotionNode, normalizeMotionProject } from "../lib/motion";
+import { defaultPageSeo, normalizePath } from "../lib/site-settings";
 
 const HISTORY_LIMIT = 60;
 const load = (): BuilderProject => loadInitialProject();
@@ -36,7 +37,7 @@ function detachComponentInstances(nodes: BuilderNode[], componentId: string): Bu
   }));
 }
 
-export type SidebarTab = "pages" | "library" | "layers" | "assets" | "themes" | "motion" | "import";
+export type SidebarTab = "pages" | "library" | "layers" | "assets" | "themes" | "motion" | "site" | "import";
 
 type State = {
   project: BuilderProject;
@@ -65,6 +66,8 @@ type State = {
   setTheme: (theme: ProjectTheme) => void;
   setDesignSystem: (patch: Partial<DesignSystem>) => void;
   setMotionSystem: (patch: Partial<MotionSystem>) => void;
+  setSeo: (patch: Partial<SeoSettings>) => void;
+  updatePageSeo: (id: string, patch: Partial<PageSeo>) => void;
   applyMotionDefaults: () => void;
   applyResponsiveDefaults: () => void;
   clearResponsiveOverrides: (id:string, viewport: Exclude<Viewport,"desktop">) => void;
@@ -129,6 +132,8 @@ export const useBuilder = create<State>((set, get) => ({
   setTheme: theme => set(s => commit(s, { ...s.project, theme: structuredClone(theme) })),
   setDesignSystem: patch => set(s => { const designSystem={...s.project.designSystem,...patch,breakpoints:{...s.project.designSystem.breakpoints,...(patch.breakpoints||{})},contentPadding:{...s.project.designSystem.contentPadding,...(patch.contentPadding||{})},spacing:{...s.project.designSystem.spacing,...(patch.spacing||{})},typography:{...s.project.designSystem.typography,...(patch.typography||{})}}; return commit(s, ensureResponsiveProject({...s.project,designSystem})); }),
   setMotionSystem: patch => set(s => commit(s, normalizeMotionProject({ ...s.project, motionSystem: { ...s.project.motionSystem, ...patch } }))),
+  setSeo: patch => set(s => commit(s, { ...s.project, seo: { ...s.project.seo, ...patch } })),
+  updatePageSeo: (id, patch) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, seo: { ...defaultPageSeo(p.name), ...(p.seo || {}), ...patch } } : p) })),
   applyMotionDefaults: () => set(s => commit(s, normalizeMotionProject(s.project))),
   applyResponsiveDefaults: () => set(s => commit(s, ensureResponsiveProject(s.project))),
   clearResponsiveOverrides: (id, viewport) => set(s => { const node=getNodeAnywhere(s.project,id); if(!node) return s; const responsive={...(node.responsive||{})}; delete responsive[viewport]; let project=s.project; if(findNode([project.globalNavbar],id)) project={...project,globalNavbar:mapNode([project.globalNavbar],id,n=>({...n,responsive}))[0]}; else if(findNode([project.globalFooter],id)) project={...project,globalFooter:mapNode([project.globalFooter],id,n=>({...n,responsive}))[0]}; else project={...project,pages:project.pages.map(p=>({...p,nodes:mapNode(p.nodes,id,n=>({...n,responsive}))}))}; return commit(s,project); }),
@@ -187,7 +192,7 @@ export const useBuilder = create<State>((set, get) => ({
 
   addPage: () => set(s => {
     const number = s.project.pages.length + 1;
-    const page: BuilderPage = { id: uid("page"), name: `Page ${number}`, path: `/page-${number}`, nodes: [], showNavbar: true, showFooter: true };
+    const page: BuilderPage = { id: uid("page"), name: `Page ${number}`, path: `/page-${number}`, nodes: [], showNavbar: true, showFooter: true, seo: defaultPageSeo(`Page ${number}`) };
     return commit(s, { ...s.project, pages: [...s.project.pages, page], activePageId: page.id }, { selectedId: null });
   }),
   removePage: id => set(s => {
@@ -196,9 +201,9 @@ export const useBuilder = create<State>((set, get) => ({
     return commit(s, { ...s.project, pages, activePageId: s.project.activePageId === id ? pages[0].id : s.project.activePageId }, { selectedId: null });
   }),
   setActivePage: activePageId => set(s => ({ project: { ...s.project, activePageId }, selectedId: null })),
-  renamePage: (id, name) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, name } : p) })),
+  renamePage: (id, name) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, name, seo: { ...defaultPageSeo(name), ...(p.seo || {}), title: p.seo?.title === p.name || !p.seo?.title ? name : p.seo.title } } : p) })),
   updatePagePath: (id, path) => set(s => {
-    const normalized = path === "/" ? "/" : `/${path.replace(/^\/+/, "").replace(/\s+/g, "-")}`;
+    const normalized = normalizePath(path.replace(/\s+/g, "-"));
     return commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, path: normalized } : p) });
   }),
   togglePageGlobal: (id, key, value) => set(s => commit(s, { ...s.project, pages: s.project.pages.map(p => p.id === id ? { ...p, [key]: value } : p) })),
