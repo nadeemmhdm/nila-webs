@@ -55,6 +55,7 @@ type State = {
   duplicateNode: (id: string) => void;
   copyNode: (id: string) => void;
   pasteNode: (parentId?: string | null) => void;
+  syncSymbolInstances: (id: string) => void;
   loadProject: (project: BuilderProject) => void;
   reset: () => void;
 };
@@ -154,6 +155,34 @@ export const useBuilder = create<State>((set, get) => ({
     const node = getNodeAnywhere(get().project, id); if (node) set({ clipboard: cloneNode(node) });
   },
   pasteNode: (parentId = null) => { const clip = get().clipboard; if (clip) get().addNode(cloneNode(clip), parentId); },
+  syncSymbolInstances: id => set(s => {
+    const source = getNodeAnywhere(s.project, id);
+    if (!source || source.type !== "symbol") return s;
+    const syncKey = source.symbolSyncKey || uid("symbol-sync");
+    const sourceWithKey: BuilderNode = { ...source, symbolSyncKey: syncKey };
+    const syncTree = (nodes: BuilderNode[]): BuilderNode[] => nodes.map(node => {
+      if (node.id === source.id) return sourceWithKey;
+      const sameSymbol = node.type === "symbol" && ((node.symbolSyncKey && node.symbolSyncKey === syncKey) || (!node.symbolSyncKey && node.componentName === source.componentName));
+      if (sameSymbol) {
+        return {
+          ...node,
+          componentName: source.componentName,
+          symbolSyncKey: syncKey,
+          style: structuredClone(source.style),
+          responsive: structuredClone(source.responsive || {}),
+          hiddenOn: structuredClone(source.hiddenOn || {}),
+          animation: source.animation,
+          hoverAnimation: source.hoverAnimation,
+          animationDuration: source.animationDuration,
+          animationDelay: source.animationDelay,
+          children: source.children?.map(cloneNode)
+        };
+      }
+      return { ...node, children: node.children ? syncTree(node.children) : node.children };
+    });
+    const pages = s.project.pages.map(page => ({ ...page, nodes: syncTree(page.nodes) }));
+    return commit(s, { ...s.project, pages }, { selectedId: id });
+  }),
   loadProject: project => { const normalized = normalizeProject(project as BuilderProject & Record<string, unknown>); persist(normalized); set({ project: normalized, selectedId: null, past: [], future: [] }); },
   reset: () => {
     const current = get().project;
