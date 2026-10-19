@@ -27,6 +27,15 @@ jobs:
           gzip -dc /tmp/p8.patch.gz > /tmp/p8.patch
           git apply --check /tmp/p8.patch
           git apply /tmp/p8.patch
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/lib/project-storage.ts')
+          s = p.read_text()
+          old = 'project: normalizeProject(project)'
+          new = 'project: normalizeProject(project as BuilderProject & Record<string, unknown>)'
+          assert old in s, 'Phase 8 backup normalization pattern missing'
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Verify all phases through Phase 8
@@ -44,6 +53,7 @@ jobs:
         run: npm run build
       - name: Commit Phase 8 source
         run: |
+          rm -f phase8.patch.part.* phase8.apply.trigger .github/workflows/apply-phase8-complete.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
