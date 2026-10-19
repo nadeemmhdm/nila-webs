@@ -27,6 +27,8 @@ jobs:
         run: npm run verify:phase4
       - name: Verify Phase 4 final scope
         run: npm run verify:phase4-final
+      - name: Verify Phase 5 responsive system
+        run: npm run verify:phase5
       - name: Phase 3 regression gate
         run: npm run check:phase3
       - name: Build editor
