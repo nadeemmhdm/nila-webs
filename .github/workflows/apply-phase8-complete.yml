@@ -1,0 +1,51 @@
+name: Apply Phase 8 Complete
+
+on:
+  push:
+    branches: [phase8-complete]
+    paths: ['phase8.apply.trigger']
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply verified Phase 8 patch
+        run: |
+          cat phase8.patch.part.* > /tmp/p8.b64
+          base64 -d /tmp/p8.b64 > /tmp/p8.patch.gz
+          echo "bffa31d80e4ac37a3528518474abe4856a713dc633015aeed4e77175eca02df1  /tmp/p8.patch.gz" | sha256sum -c -
+          gzip -t /tmp/p8.patch.gz
+          gzip -dc /tmp/p8.patch.gz > /tmp/p8.patch
+          git apply --check /tmp/p8.patch
+          git apply /tmp/p8.patch
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify all phases through Phase 8
+        run: |
+          npm run verify:phase3
+          npm run verify:phase4
+          npm run verify:phase4-final
+          npm run verify:phase5
+          npm run verify:phase6
+          npm run verify:phase7
+          npm run verify:phase8
+          npm run verify:react-export
+          npm run check:phase3
+      - name: Production build
+        run: npm run build
+      - name: Commit Phase 8 source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: complete phase 8 recovery and quality center"
+          git push origin HEAD:phase8-complete
