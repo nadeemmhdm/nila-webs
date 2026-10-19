@@ -20,13 +20,13 @@ jobs:
         run: |
           cat phase4part.* > /tmp/phase4.b64
           base64 -d /tmp/phase4.b64 | gzip -d > /tmp/phase4.patch
-          EXCLUDES="--exclude=src-tauri/tauri.conf.json --exclude=src/lib/exporter.ts --exclude=src/store/builder.ts --exclude=src/templates/phase3-elements.ts --exclude=src/types.ts"
+          EXCLUDES="--exclude=src-tauri/tauri.conf.json --exclude=src/lib/exporter.ts --exclude=src/store/builder.ts --exclude=src/templates/phase3-elements.ts --exclude=src/types.ts --exclude=.github/workflows/web-build.yml"
           git apply --check $EXCLUDES /tmp/phase4.patch
           git apply $EXCLUDES /tmp/phase4.patch
           cat p4conflict.part.* > /tmp/p4conflict.b64
           base64 -d /tmp/p4conflict.b64 | tar -xz
-          rm -f p4conflict.part.* phase4part.* phase4final.trigger .github/workflows/apply-phase4-final.yml
-          rm -f phase3fin.part.* phase3final.trigger .github/workflows/apply-phase3-final.yml
+          rm -f p4conflict.part.* phase4part.* phase4final.trigger
+          rm -f phase3fin.part.* phase3final.trigger
       - name: Verify source before commit
         run: |
           node scripts/verify-phase3.mjs
@@ -36,5 +36,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "feat: complete phase 3 and start phase 4 prompt adapter"
+          git commit -m "feat: start phase 4 prompt block and theme engine"
           git push origin HEAD:main
