@@ -4,7 +4,7 @@ export type NodeType =
   | "section" | "container" | "card" | "form"
   | "heading" | "text" | "button" | "image" | "video" | "icon"
   | "input" | "textarea" | "select" | "label" | "checkbox" | "radio" | "switch" | "range" | "file"
-  | "link" | "badge" | "list" | "embed" | "map" | "table" | "tabs" | "accordion" | "modal" | "carousel" | "socials" | "symbol"
+  | "link" | "badge" | "list" | "embed" | "map" | "html" | "table" | "tabs" | "accordion" | "modal" | "carousel" | "socials" | "symbol"
   | "spacer" | "divider" | "navbar" | "footer";
 
 export type AnimationName =
@@ -12,6 +12,9 @@ export type AnimationName =
   | "zoom-in" | "float" | "pulse" | "bounce-soft";
 
 export type HoverAnimation = "none" | "lift" | "scale" | "glow" | "tilt";
+
+export type InputType = "text" | "email" | "password" | "number" | "date" | "datetime-local" | "tel" | "url" | "search";
+export type ListStyle = "disc" | "decimal" | "none";
 
 export interface NodeStyle {
   background: string;
@@ -46,7 +49,6 @@ export interface NodeResponsiveStyle {
   tablet?: Partial<NodeStyle>;
   mobile?: Partial<NodeStyle>;
 }
-
 
 export interface InteractiveItem {
   title: string;
@@ -92,6 +94,25 @@ export interface BuilderNode {
   slides?: CarouselSlide[];
   links?: SocialLink[];
   componentName?: string;
+  symbolSyncKey?: string;
+  inputType?: InputType;
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  accept?: string;
+  multiple?: boolean;
+  ariaLabel?: string;
+  titleAttr?: string;
+  html?: string;
+  listStyle?: ListStyle;
+  tableStriped?: boolean;
+  tableCompact?: boolean;
+  modalCloseOnBackdrop?: boolean;
+  modalWidth?: string;
+  carouselAutoplay?: boolean;
+  carouselInterval?: number;
+  carouselShowDots?: boolean;
+  carouselShowArrows?: boolean;
   animation?: AnimationName;
   hoverAnimation?: HoverAnimation;
   animationDuration?: number;
