@@ -20,8 +20,12 @@ jobs:
         run: |
           cat phase4part.* > /tmp/phase4.b64
           base64 -d /tmp/phase4.b64 | gzip -d > /tmp/phase4.patch
-          git apply --3way /tmp/phase4.patch
-          rm -f phase4part.* phase4final.trigger .github/workflows/apply-phase4-final.yml
+          EXCLUDES="--exclude=src-tauri/tauri.conf.json --exclude=src/lib/exporter.ts --exclude=src/store/builder.ts --exclude=src/templates/phase3-elements.ts --exclude=src/types.ts"
+          git apply --check $EXCLUDES /tmp/phase4.patch
+          git apply $EXCLUDES /tmp/phase4.patch
+          cat p4conflict.part.* > /tmp/p4conflict.b64
+          base64 -d /tmp/p4conflict.b64 | tar -xz
+          rm -f p4conflict.part.* phase4part.* phase4final.trigger .github/workflows/apply-phase4-final.yml
           rm -f phase3fin.part.* phase3final.trigger .github/workflows/apply-phase3-final.yml
       - name: Verify source before commit
         run: |
