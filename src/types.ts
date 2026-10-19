@@ -9,10 +9,13 @@ export type NodeType =
   | "spacer" | "divider" | "navbar" | "footer";
 
 export type AnimationName =
-  | "none" | "fade-up" | "fade-in" | "slide-left" | "slide-right"
-  | "zoom-in" | "float" | "pulse" | "bounce-soft";
+  | "none" | "fade-up" | "fade-down" | "fade-in" | "slide-left" | "slide-right" | "slide-up" | "slide-down"
+  | "zoom-in" | "zoom-out" | "rotate-in" | "blur-in" | "float" | "pulse" | "bounce-soft";
 
-export type HoverAnimation = "none" | "lift" | "scale" | "glow" | "tilt";
+export type HoverAnimation = "none" | "lift" | "scale" | "glow" | "tilt" | "rotate" | "press" | "brightness";
+export type MotionTrigger = "load" | "scroll" | "always";
+export type TimelineOrder = "forward" | "reverse";
+export type ReducedMotionMode = "respect" | "reduce" | "disable";
 export type InputKind = "text" | "email" | "password" | "number" | "date" | "datetime-local" | "time" | "tel" | "url" | "search";
 export type InputType = InputKind;
 export type ListStyle = "disc" | "decimal" | "none";
@@ -74,6 +77,17 @@ export interface DesignSystem {
   typography: { xs:string; sm:string; base:string; lg:string; xl:string; xxl:string; display:string };
   autoResponsive: boolean;
   reducedMotion: boolean;
+}
+
+export interface MotionSystem {
+  enabled: boolean;
+  defaultTrigger: MotionTrigger;
+  defaultDuration: number;
+  defaultEasing: string;
+  scrollThreshold: number;
+  defaultStagger: number;
+  parallaxMax: number;
+  reducedMotion: ReducedMotionMode;
 }
 
 export interface InteractiveItem { title: string; body: string; }
@@ -143,6 +157,18 @@ export interface BuilderNode {
   hoverAnimation?: HoverAnimation;
   animationDuration?: number;
   animationDelay?: number;
+  motionTrigger?: MotionTrigger;
+  motionRepeat?: boolean;
+  motionThreshold?: number;
+  motionEasing?: string;
+  transitionDuration?: number;
+  transitionEasing?: string;
+  parallax?: number;
+  sticky?: boolean;
+  stickyTop?: string;
+  stickyZIndex?: number;
+  timelineStagger?: number;
+  timelineOrder?: TimelineOrder;
   style: NodeStyle;
   responsive?: NodeResponsiveStyle;
   hiddenOn?: Partial<Record<Viewport, boolean>>;
@@ -216,9 +242,10 @@ export interface BuilderProject {
   savedThemes: ProjectTheme[];
   favoriteLibraryIds: string[];
   designSystem: DesignSystem;
+  motionSystem: MotionSystem;
   createdAt: string;
   updatedAt: string;
-  schemaVersion: 7;
+  schemaVersion: 8;
 }
 
 export interface ProjectSummary {

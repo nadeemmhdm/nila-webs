@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AriaRole, CSSProperties, DragEvent, MouseEvent } from "react";
 import { ChevronLeft, ChevronRight, GripVertical, X } from "lucide-react";
 import type { BuilderNode, BuilderProject } from "../types";
@@ -17,7 +17,7 @@ const toCss = (s: BuilderNode["style"]): CSSProperties => ({
 
 const canNest = (node: BuilderNode) => ["container", "section", "card", "form", "navbar", "footer", "symbol", "modal"].includes(node.type);
 
-export default function NodeRenderer({ node, readOnly = false }: { node: BuilderNode; readOnly?: boolean }) {
+export default function NodeRenderer({ node, readOnly = false, timelineOffset = 0 }: { node: BuilderNode; readOnly?: boolean; timelineOffset?: number }) {
   const { project, selectedId, setSelected, addNode, moveNode, viewport } = useBuilder();
   const mediaSrc = useAssetSource(project, node.src);
   const [activeTab, setActiveTab] = useState(node.defaultIndex ?? 0);
@@ -25,6 +25,20 @@ export default function NodeRenderer({ node, readOnly = false }: { node: Builder
   const [modalOpen, setModalOpen] = useState(false);
   const [switchOn, setSwitchOn] = useState(!!node.checked);
   const [slide, setSlide] = useState(0);
+  const motionEl = useRef<HTMLElement | null>(null);
+  const motionEnabled = project.motionSystem.enabled;
+  const [prefersReduced, setPrefersReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReduced(query.matches);
+    update(); query.addEventListener?.("change", update);
+    return () => query.removeEventListener?.("change", update);
+  }, []);
+  const reduced = project.motionSystem.reducedMotion === "reduce" || (project.motionSystem.reducedMotion === "respect" && prefersReduced);
+  const trigger = node.motionTrigger || project.motionSystem.defaultTrigger;
+  const [inView, setInView] = useState(trigger !== "scroll" || !readOnly);
+  const [parallaxY, setParallaxY] = useState(0);
   const selected = selectedId === node.id;
   const slides = node.slides || [];
   const carouselAutoplay = node.autoplay ?? node.carouselAutoplay ?? false;
@@ -32,6 +46,38 @@ export default function NodeRenderer({ node, readOnly = false }: { node: Builder
   const carouselShowDots = node.showDots ?? node.carouselShowDots ?? true;
   const carouselShowArrows = node.carouselShowArrows ?? true;
   const modalCloseOnBackdrop = node.closeOnBackdrop ?? node.modalCloseOnBackdrop ?? true;
+
+
+  useEffect(() => {
+    if (!readOnly || !motionEnabled || reduced || trigger !== "scroll" || !node.animation || node.animation === "none") { setInView(true); return; }
+    const el = motionEl.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setInView(true); return; }
+    setInView(false);
+    const observer = new IntersectionObserver(entries => {
+      const entry = entries[0];
+      if (entry?.isIntersecting) { setInView(true); if (!node.motionRepeat) observer.disconnect(); }
+      else if (node.motionRepeat) setInView(false);
+    }, { threshold: Math.max(0, Math.min(1, node.motionThreshold ?? project.motionSystem.scrollThreshold)), rootMargin: "0px 0px -4% 0px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [readOnly, motionEnabled, reduced, trigger, node.animation, node.motionRepeat, node.motionThreshold, project.motionSystem.scrollThreshold]);
+
+  useEffect(() => {
+    if (!readOnly || !motionEnabled || reduced || !node.parallax) { setParallaxY(0); return; }
+    const el = motionEl.current;
+    if (!el) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+      const strength = Math.max(-project.motionSystem.parallaxMax, Math.min(project.motionSystem.parallaxMax, node.parallax || 0));
+      setParallaxY(Math.round(-center * strength * 0.18));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update(); window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [readOnly, motionEnabled, reduced, node.parallax, project.motionSystem.parallaxMax]);
 
   useEffect(() => {
     if (!readOnly || !carouselAutoplay || slides.length < 2) return;
@@ -59,12 +105,19 @@ export default function NodeRenderer({ node, readOnly = false }: { node: Builder
     else if (moving && moving !== node.id) moveNode(moving, node.id);
   };
   const dragStart = (e: DragEvent) => { if (readOnly || ["navbar", "footer"].includes(node.type)) return; e.stopPropagation(); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("application/nila-node", node.id); };
-  const children = node.children?.map(child => <NodeRenderer key={child.id} node={child} readOnly={readOnly}/>);
-  const className = `builder-node type-${node.type} anim-${node.animation || "none"} hover-${node.hoverAnimation || "none"} ${selected && !readOnly ? "selected-node" : ""}`;
+  const childCount = node.children?.length || 0;
+  const children = node.children?.map((child,index) => {
+    const orderIndex = node.timelineOrder === "reverse" ? childCount - 1 - index : index;
+    const childOffset = (node.timelineStagger || 0) * orderIndex;
+    return <NodeRenderer key={child.id} node={child} readOnly={readOnly} timelineOffset={timelineOffset + childOffset}/>;
+  });
+  const motionClass = !motionEnabled || reduced ? "motion-disabled" : `motion-${trigger} ${inView ? "motion-inview" : "motion-pending"}`;
+  const className = `builder-node type-${node.type} anim-${node.animation || "none"} hover-${node.hoverAnimation || "none"} ${motionClass} ${node.parallax ? "has-parallax" : ""} ${node.sticky ? "is-sticky" : ""} ${selected && !readOnly ? "selected-node" : ""}`;
   const common = {
     onClick: click, onDragOver: (e: DragEvent) => { if (!readOnly && canNest(node)) e.preventDefault(); }, onDrop: drop,
     draggable: !readOnly && !["navbar", "footer"].includes(node.type), onDragStart: dragStart,
-    style: { ...style, animationDuration: `${node.animationDuration ?? .7}s`, animationDelay: `${node.animationDelay ?? 0}s` }, className,
+    ref: (el: HTMLElement | null) => { motionEl.current = el; },
+    style: { ...style, animationDuration: `${node.animationDuration ?? project.motionSystem.defaultDuration}s`, animationDelay: `${(node.animationDelay ?? 0) + timelineOffset}s`, animationTimingFunction: node.motionEasing || project.motionSystem.defaultEasing, transitionDuration: `${node.transitionDuration ?? .25}s`, transitionTimingFunction: node.transitionEasing || "ease", ...(readOnly && node.parallax && !reduced ? ({ "--nw-parallax-y": `${parallaxY}px` } as CSSProperties) : {}), ...(readOnly && node.sticky ? { position: "sticky" as const, top: node.stickyTop || "0px", zIndex: node.stickyZIndex ?? 10 } : {}) }, className,
     "aria-label": node.ariaLabel || undefined, title: node.titleAttr || undefined, role: node.roleAttr as AriaRole | undefined, tabIndex: node.tabIndex
   };
   const overlay = !readOnly && selected ? <div className="selection-label"><GripVertical size={12}/>{node.name}</div> : null;

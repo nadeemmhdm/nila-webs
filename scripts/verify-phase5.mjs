@@ -2,15 +2,15 @@ import fs from "node:fs";
 const read=p=>fs.readFileSync(p,"utf8");
 const pkg=read("package.json"),types=read("src/types.ts"),design=read("src/lib/design-system.ts"),store=read("src/store/builder.ts"),canvas=read("src/components/Canvas.tsx"),topbar=read("src/components/Topbar.tsx"),props=read("src/components/PropertiesPanel.tsx"),theme=read("src/components/ThemePanel.tsx"),renderer=read("src/components/NodeRenderer.tsx"),exporter=read("src/lib/exporter.ts"),storage=read("src/lib/project-storage.ts"),roadmap=read("docs/ROADMAP.md"),styles=read("src/styles.css")+read("src/phase4.css");
 const checks=[
- ["version 0.8.0",pkg.includes('"version": "0.8.0"')],
- ["schema v7",types.includes('schemaVersion: 7')&&types.includes('interface DesignSystem')],
+ ["version 0.8+",/"version": "(?:0\.[89]\.0|1\.)/.test(pkg)],
+ ["schema v7+",/schemaVersion: (?:7|8|9);/.test(types)&&types.includes('interface DesignSystem')],
  ["desktop default",store.includes('viewport: "desktop"')&&store.includes('viewport: "desktop", past: []')],
  ["three previews",topbar.includes('>Desktop</span>')&&topbar.includes('>Tablet</span>')&&topbar.includes('>Mobile</span>')],
  ["configurable preview widths",canvas.includes('previewWidth(project.designSystem,viewport)')&&topbar.includes('previewTablet')&&topbar.includes('previewMobile')],
  ["cascade responsive styles",design.includes('...(node.responsive?.tablet || {})')&&design.includes('...(node.responsive?.mobile || {})')],
  ["automatic responsive nodes",design.includes('ensureResponsiveNode')&&design.includes('gridColumns')&&design.includes('flexDirection')],
  ["project migration responsive",storage.includes('defaultDesignSystem')&&storage.includes('ensureResponsiveProject(project)')],
- ["new blocks responsive",store.includes('node = ensureResponsiveNode(node, s.project.designSystem)')],
+ ["new blocks responsive",store.includes('ensureResponsiveNode(node, s.project.designSystem)')],
  ["responsive reset",props.includes('Reset {viewport} overrides')&&props.includes('clearResponsiveOverrides')],
  ["responsive health",theme.includes('Responsive health')&&theme.includes('Auto-fix all')&&theme.includes('auditResponsiveProject')],
  ["spacing tokens",types.includes('spacing: { xs:string')&&theme.includes('Spacing scale')],

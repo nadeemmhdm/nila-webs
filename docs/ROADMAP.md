@@ -15,8 +15,8 @@ Completed in v0.7.0. The safe family-aware prompt/code compiler converts supplie
 ## Phase 5 — Responsive design system ✅
 Completed in v0.8.0. Desktop is the default/base preview, with configurable Tablet and Mobile preview widths plus runtime mobile/tablet breakpoints. Every existing, imported, reusable-component and template node passes through the shared responsive engine; Tablet inherits Desktop and Mobile inherits Desktop + Tablet before applying local overrides. Phase 5 adds automatic responsive defaults, overflow-safe component CSS, responsive health auditing/auto-fix, breakpoint/page-padding controls, spacing and typography scales, reusable CSS variable tokens, custom body/heading font stacks, responsive theme parity, per-breakpoint visibility/override reset, reduced-motion preference support and responsive React/Vite export parity.
 
-## Phase 6 — Motion and interaction studio
-Scroll reveal, hover interactions, timelines, parallax, sticky sections, state transitions and reduced-motion support.
+## Phase 6 — Motion and interaction studio ✅
+Completed in v0.9.0. Adds a project Motion Studio, IntersectionObserver scroll reveal with repeat/threshold controls, expanded entrance/hover presets, child timeline sequencing and reverse order, clamped parallax, sticky nodes, configurable easing/state transitions, project motion defaults/auditing, and reduced-motion modes. Editor Live/Preview and exported React/Vite sites use the same motion model.
 
 ## Phase 7 — Navigation, forms and SEO
 Visual link manager, anchors, menus, form integrations, validation, metadata, Open Graph, favicon, sitemap, robots and accessibility checks.

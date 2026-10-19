@@ -1,4 +1,4 @@
-import { Boxes, FileCode2, FileStack, Images, Layers3, Palette } from "lucide-react";
+import { Boxes, FileCode2, FileStack, Images, Layers3, Palette, Sparkles } from "lucide-react";
 import { useBuilder } from "../store/builder";
 import AssetsPanel from "./AssetsPanel";
 import LayersPanel from "./LayersPanel";
@@ -6,6 +6,7 @@ import LibraryPanel from "./LibraryPanel";
 import PagesPanel from "./PagesPanel";
 import PromptImportPanel from "./PromptImportPanel";
 import ThemePanel from "./ThemePanel";
+import MotionStudioPanel from "./MotionStudioPanel";
 
 export default function LeftSidebar() {
   const { sidebarTab, setSidebarTab } = useBuilder();
@@ -16,6 +17,7 @@ export default function LeftSidebar() {
       <button className={sidebarTab === "layers" ? "active" : ""} onClick={() => setSidebarTab("layers")} title="Layers"><Layers3 size={18}/><span>Layers</span></button>
       <button className={sidebarTab === "assets" ? "active" : ""} onClick={() => setSidebarTab("assets")} title="Project assets"><Images size={18}/><span>Assets</span></button>
       <button className={sidebarTab === "themes" ? "active" : ""} onClick={() => setSidebarTab("themes")} title="Theme system"><Palette size={18}/><span>Themes</span></button>
+      <button className={sidebarTab === "motion" ? "active" : ""} onClick={() => setSidebarTab("motion")} title="Motion studio"><Sparkles size={18}/><span>Motion</span></button>
       <button className={sidebarTab === "import" ? "active" : ""} onClick={() => setSidebarTab("import")} title="Import prompt/code"><FileCode2 size={18}/><span>Import</span></button>
     </div>
     <div className="sidebar-content">
@@ -24,6 +26,7 @@ export default function LeftSidebar() {
       {sidebarTab === "layers" && <LayersPanel/>}
       {sidebarTab === "assets" && <AssetsPanel/>}
       {sidebarTab === "themes" && <ThemePanel/>}
+      {sidebarTab === "motion" && <MotionStudioPanel/>}
       {sidebarTab === "import" && <PromptImportPanel/>}
     </div>
   </aside>;

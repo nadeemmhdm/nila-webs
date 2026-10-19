@@ -2,7 +2,7 @@ import { useRef } from "react";
 import type { ReactNode } from "react";
 import { ClipboardCopy, Copy, Eye, EyeOff, FolderOpen, Link2, RefreshCw, RotateCcw, Save, Trash2, Unlink, Upload } from "lucide-react";
 import { getNodeAnywhere, useBuilder } from "../store/builder";
-import type { AnimationName, AssetKind, BuilderNode, HoverAnimation, InputKind, NodeStyle } from "../types";
+import type { AnimationName, AssetKind, BuilderNode, HoverAnimation, InputKind, MotionTrigger, NodeStyle, TimelineOrder } from "../types";
 import { resolveStyle } from "../lib/nodes";
 import { createUploadedAsset } from "../lib/assets";
 
@@ -107,11 +107,21 @@ export default function PropertiesPanel() {
       {["embed","map"].includes(node.type) && !node.alt && <div className="a11y-warning">Add a descriptive frame title.</div>}
     </PropertySection>
 
-    <PropertySection title="Animation">
-      <Field label="Entrance"><select value={node.animation || "none"} onChange={e => set("animation",e.target.value as AnimationName)}>{["none","fade-up","fade-in","slide-left","slide-right","zoom-in","float","pulse","bounce-soft"].map(v => <option key={v}>{v}</option>)}</select></Field>
-      <Field label="Hover"><select value={node.hoverAnimation || "none"} onChange={e => set("hoverAnimation",e.target.value as HoverAnimation)}>{["none","lift","scale","glow","tilt"].map(v => <option key={v}>{v}</option>)}</select></Field>
-      <Field label="Duration"><input type="number" min="0" step="0.1" value={node.animationDuration ?? .7} onChange={e => set("animationDuration",Number(e.target.value))}/></Field>
+    <PropertySection title="Motion & interaction">
+      <div className="responsive-note">Scroll reveal runs in Live/Preview and exported sites. Parent timeline stagger is added to child delays automatically. Parallax is clamped by the project Motion Studio.</div>
+      <Field label="Entrance"><select value={node.animation || "none"} onChange={e => set("animation",e.target.value as AnimationName)}>{["none","fade-up","fade-down","fade-in","slide-left","slide-right","slide-up","slide-down","zoom-in","zoom-out","rotate-in","blur-in","float","pulse","bounce-soft"].map(v => <option key={v}>{v}</option>)}</select></Field>
+      <Field label="Trigger"><select value={node.motionTrigger || project.motionSystem.defaultTrigger} onChange={e => set("motionTrigger",e.target.value as MotionTrigger)}><option value="scroll">Scroll reveal</option><option value="load">Page load</option><option value="always">Always / loop</option></select></Field>
+      {node.motionTrigger === "scroll" && <><Field label="Repeat"><label className="toggle-line"><input type="checkbox" checked={!!node.motionRepeat} onChange={e=>set("motionRepeat",e.target.checked)}/><span>{node.motionRepeat?"Every re-entry":"Once"}</span></label></Field><Field label="Threshold"><input type="number" min="0" max="1" step="0.05" value={node.motionThreshold ?? project.motionSystem.scrollThreshold} onChange={e=>set("motionThreshold",Math.max(0,Math.min(1,Number(e.target.value))))}/></Field></>}
+      <Field label="Hover"><select value={node.hoverAnimation || "none"} onChange={e => set("hoverAnimation",e.target.value as HoverAnimation)}>{["none","lift","scale","glow","tilt","rotate","press","brightness"].map(v => <option key={v}>{v}</option>)}</select></Field>
+      <Field label="Duration"><input type="number" min="0" step="0.05" value={node.animationDuration ?? project.motionSystem.defaultDuration} onChange={e => set("animationDuration",Number(e.target.value))}/></Field>
       <Field label="Delay"><input type="number" min="0" step="0.05" value={node.animationDelay ?? 0} onChange={e => set("animationDelay",Number(e.target.value))}/></Field>
+      <Field label="Easing"><input value={node.motionEasing || project.motionSystem.defaultEasing} onChange={e=>set("motionEasing",e.target.value)}/></Field>
+      <Field label="State transition"><input type="number" min="0" step="0.05" value={node.transitionDuration ?? .25} onChange={e=>set("transitionDuration",Number(e.target.value))}/></Field>
+      <Field label="Transition easing"><input value={node.transitionEasing || "ease"} onChange={e=>set("transitionEasing",e.target.value)}/></Field>
+      <Field label="Parallax"><input type="number" min={-project.motionSystem.parallaxMax} max={project.motionSystem.parallaxMax} step="0.05" value={node.parallax ?? 0} onChange={e=>set("parallax",Number(e.target.value))}/></Field>
+      <Field label="Sticky"><label className="toggle-line"><input type="checkbox" checked={!!node.sticky} onChange={e=>set("sticky",e.target.checked)}/><span>{node.sticky?"Enabled":"Off"}</span></label></Field>
+      {node.sticky && <><Field label="Sticky top"><input value={node.stickyTop || "0px"} onChange={e=>set("stickyTop",e.target.value)}/></Field><Field label="Sticky z-index"><input type="number" value={node.stickyZIndex ?? 10} onChange={e=>set("stickyZIndex",Number(e.target.value))}/></Field></>}
+      {!!node.children?.length && <><Field label="Child stagger"><input type="number" min="0" step="0.02" value={node.timelineStagger ?? 0} onChange={e=>set("timelineStagger",Math.max(0,Number(e.target.value)))}/></Field><Field label="Timeline order"><select value={node.timelineOrder || "forward"} onChange={e=>set("timelineOrder",e.target.value as TimelineOrder)}><option value="forward">Forward</option><option value="reverse">Reverse</option></select></Field></>}
     </PropertySection>
   </aside>;
 }

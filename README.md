@@ -37,6 +37,9 @@
 - Complex visual editors for table caption/rows, carousel slides/assets, social/breadcrumb links and reusable components.
 - Phase 3 regression verifier runs in CI before the production TypeScript/Vite build.
 
+
+- Phase 6 Motion Studio with scroll reveal, parallax, sticky elements, child timeline stagger/order, transition easing, expanded entrance/hover presets and reduced-motion controls.
+- Motion behavior is shared by Live/Preview and standalone React/Vite exports.
 - Phase 4 Prompt Adapter Engine converts pasted Shadcn/React/TSX prompts into safe editable builder nodes without executing arbitrary code.
 - 78 user-supplied prompt/catalog variants are indexed in the Sections library with extracted copy, media and animation hints.
 - Project theme system with preset palettes, typography, radius/shadow tokens, live CSS variables and current-page restyling.
