@@ -36,6 +36,16 @@ jobs:
           gzip -t /tmp/rnew.tar.gz
           tar -xzf /tmp/rnew.tar.gz
 
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/lib/project-storage.ts')
+          s = p.read_text()
+          old = 'createdAt: now, updatedAt: now, schemaVersion: 9'
+          new = 'createdAt: now, updatedAt: now, schemaVersion: 10'
+          assert old in s, 'schema version migration pattern missing'
+          p.write_text(s.replace(old, new, 1))
+          PY
+
           rm -f rex2.part.* rnew.part.* reactexp.part.* react-export.trigger
       - name: Install dependencies
         run: npm install --no-audit --no-fund
