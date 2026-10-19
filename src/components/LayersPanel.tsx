@@ -13,7 +13,7 @@ export default function LayersPanel() {
   return <section className="panel-body">
     <div className="panel-heading"><div><span className="panel-kicker">Document tree</span><h2>Layers</h2></div><Layers3 size={17}/></div>
     <p className="panel-copy">Select nested elements precisely. Use arrows to reorder siblings on the current page.</p>
-    <div className="layer-tree">{roots.map(node => <LayerRow key={node.id} node={node} depth={0} selectedId={selectedId} onSelect={setSelected} onUp={() => nudgeNode(node.id,-1)} onDown={() => nudgeNode(node.id,1)} onDuplicate={() => duplicateNode(node.id)} onDelete={() => deleteNode(node.id)} viewport={viewport} onHidden={(hidden) => setNodeHidden(node.id, viewport, hidden)} global={node.type === "navbar" || node.type === "footer"}/>)}</div>
+    <div className="layer-tree">{roots.map(node => <LayerRow key={node.id} node={node} depth={0} selectedId={selectedId} onSelect={setSelected} onUp={() => nudgeNode(node.id,-1)} onDown={() => nudgeNode(node.id,1)} onDuplicate={() => duplicateNode(node.id)} onDelete={() => deleteNode(node.id)} viewport={viewport} onHidden={(hidden: boolean) => setNodeHidden(node.id, viewport, hidden)} global={node.type === "navbar" || node.type === "footer"}/>)}</div>
     {selectedId && getNodeAnywhere(project, selectedId)?.meta?.sourceId && <div className="meta-box"><strong>Block source</strong><span>{String(getNodeAnywhere(project, selectedId)?.meta?.sourceId)}</span></div>}
   </section>;
 }
