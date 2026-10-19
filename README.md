@@ -2,10 +2,13 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.2.0
+## Current build — v0.3.0 (Phase 2 workspace + assets)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
-- MIT App Inventor/Figma-style **Build / Pages / Layers** workspace.
+- Splash screen followed by a dedicated **Projects** dashboard.
+- Project creation flow with required name, optional description, **Blank** default, and starter-template selection.
+- Recent projects plus an all-projects library with search and reopen/delete actions.
+- MIT App Inventor/Figma-style **Build / Pages / Layers / Assets** workspace.
 - Collapsible left and right sidebars.
 - Desktop, tablet and mobile canvas sizes.
 - Per-breakpoint style overrides and visibility controls.
@@ -19,6 +22,9 @@
 - Internal page links and external links.
 - Entrance and hover animations.
 - Editable project JSON import/export.
+- Project asset library with image/video uploads and remote media links.
+- Uploaded media is persisted in IndexedDB and referenced without bloating project JSON.
+- Exported uploaded media is written to `public/assets/`; external URLs stay external.
 - Standalone React + Vite website ZIP export.
 - Initial ShadcnSpace-inspired section adapters and uploaded starter-template adapters.
 
@@ -36,6 +42,8 @@ Hero, pricing, portfolio, feature, about, team, testimonial, services, CTA, cont
 npm install
 npm run dev
 ```
+
+Open the Vite URL shown in the terminal.
 
 ## Run as a Windows desktop application
 
@@ -65,11 +73,11 @@ Deploy the generated `dist/` directory to a static host. Exported sites use hash
 
 ## Architecture
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The editor stores websites as a serializable node tree, while the renderer and exporter consume the same project schema. This keeps visual editing and generated output aligned.
 
 ## 10-phase roadmap
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phase 1 is complete; Phase 2 is substantially implemented in this build.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phase 1 is complete; Phase 2 now includes the project workspace, startup flow and first production asset pipeline in addition to the editor UX work.
 
 ## Contributing and security
 
