@@ -1,6 +1,6 @@
 import { Download, Eye, EyeOff, FolderKanban, Github, Import, Monitor, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Play, Redo2, RotateCcw, Save, Smartphone, Tablet, Undo2, Zap } from "lucide-react";
 import { useRef, useState } from "react";
-import { exportReactVite } from "../lib/exporter";
+import { exportReactVite, type ExportCssMode } from "../lib/exporter";
 import { importProjectToStorage } from "../lib/project-storage";
 import { useBuilder } from "../store/builder";
 import GitHubPublishDialog from "./GitHubPublishDialog";
@@ -10,6 +10,7 @@ export default function Topbar({ onProjects }: { onProjects: () => void }) {
   const vpWidth = viewport === "desktop" ? project.designSystem.breakpoints.previewDesktop : viewport === "tablet" ? project.designSystem.breakpoints.previewTablet : project.designSystem.breakpoints.previewMobile;
   const fileRef = useRef<HTMLInputElement>(null);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [exportMode, setExportMode] = useState<ExportCssMode>("css");
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(project,null,2)], { type:"application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${slug(project.name)}.nila.json`; a.click(); URL.revokeObjectURL(a.href);
@@ -26,9 +27,9 @@ export default function Topbar({ onProjects }: { onProjects: () => void }) {
     <div className="top-actions">
       {!previewMode && <button className={livePreview ? "active-live" : ""} onClick={() => setLivePreview(!livePreview)}><Play size={15}/>{livePreview ? "Live on" : "Live"}</button>}
       <button onClick={() => setPreviewMode(!previewMode)}>{previewMode?<EyeOff size={15}/>:<Eye size={15}/>} {previewMode?"Exit preview":"Preview"}</button>
-      {!previewMode && <><button className="icon-only-action" onClick={() => fileRef.current?.click()} title="Import project"><Import size={15}/></button><input ref={fileRef} hidden type="file" accept=".json,.nila.json" onChange={e => importJson(e.target.files?.[0])}/><button className="icon-only-action" onClick={exportJson} title="Save editable project"><Save size={15}/></button><button className="primary-action" onClick={() => exportReactVite(project)}><Download size={15}/>Export React/Vite</button><button className="icon-only-action" onClick={() => setPublishOpen(true)} title="Publish generated React/Vite source to GitHub"><Github size={15}/></button><button className="icon-only-action" title="Reset project" onClick={() => confirm("Reset this Nila Webs project?") && reset()}><RotateCcw size={15}/></button></>}
+      {!previewMode && <><button className="icon-only-action" onClick={() => fileRef.current?.click()} title="Import project"><Import size={15}/></button><input ref={fileRef} hidden type="file" accept=".json,.nila.json" onChange={e => importJson(e.target.files?.[0])}/><button className="icon-only-action" onClick={exportJson} title="Save editable project"><Save size={15}/></button><select className="export-mode-select" value={exportMode} onChange={e=>setExportMode(e.target.value as ExportCssMode)} title="Generated CSS profile"><option value="css">CSS</option><option value="tailwind4">Tailwind 4</option></select><button className="primary-action" onClick={() => exportReactVite(project,{cssMode:exportMode})}><Download size={15}/>Export React/Vite</button><button className="icon-only-action" onClick={() => setPublishOpen(true)} title="Publish generated React/Vite source to GitHub"><Github size={15}/></button><button className="icon-only-action" title="Reset project" onClick={() => confirm("Reset this Nila Webs project?") && reset()}><RotateCcw size={15}/></button></>}
     </div>
-  {publishOpen && <GitHubPublishDialog project={project} onClose={() => setPublishOpen(false)}/>}
+  {publishOpen && <GitHubPublishDialog project={project} defaultCssMode={exportMode} onClose={() => setPublishOpen(false)}/>}
   </header>;
 }
 const slug=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"nila-webs-site";

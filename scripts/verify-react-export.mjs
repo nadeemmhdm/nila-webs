@@ -36,7 +36,7 @@ const project = {
   security:{enableHeaders:true,headersPreset:"balanced",contentSecurityPolicy:"",referrerPolicy:"strict-origin-when-cross-origin",frameOptions:"SAMEORIGIN",permissionsPolicy:"",strictTransportSecurity:"",crossOriginOpenerPolicy:"same-origin",generateSecurityTxt:false,securityContact:"",securityPolicyUrl:"",securityExpires:"",securityAcknowledgments:""}
 };
 const manifest = {generatedBy:"Nila Webs",schemaVersion:1,projectId:"fixture",usedSourceIds:["prompt-hero"],sourceDependencies:["motion/react"],runtimeDependencies:["react","react-dom","react-router-dom"],usedComponentIds:["component-1"],usedAssetIds:[]};
-const files = buildReactSourceTextFiles(project, manifest);
+const files = buildReactSourceTextFiles(project, manifest, {builderVersion:"1.4.0",buildId:"fixture-build",projectId:"fixture",generatedAt:"2026-10-19T00:00:00.000Z"});
 const checks = [
   ["App.tsx generated", !!files["src/App.tsx"]],
   ["multi-page modules", !!files["src/pages/HomePage.tsx"] && !!files["src/pages/AboutPage.tsx"]],
@@ -48,7 +48,9 @@ const checks = [
   ["theme source module", !!files["src/theme/siteTheme.ts"]],
   ["runtime animation renderer", files["src/runtime/NodeView.tsx"]?.includes("IntersectionObserver") && files["src/runtime/NodeView.tsx"]?.includes("animationDuration")],
   ["BrowserRouter route source", files["src/App.tsx"]?.includes("<Route") && files["src/App.tsx"]?.includes("/about")],
-  ["no site.json runtime", !Object.keys(files).some(k=>k.endsWith("site.json")) && !source.includes("src/site.json")]
+  ["no site.json runtime", !Object.keys(files).some(k=>k.endsWith("site.json")) && !source.includes("src/site.json")],
+  ["visible watermark component", !!files["src/components/global/NilaWatermark.tsx"] && files["src/App.tsx"]?.includes("<NilaWatermark/>")],
+  ["generated build metadata", files["src/site.config.ts"]?.includes("fixture-build") && files["src/components/global/NilaWatermark.tsx"]?.includes("fixture-build")]
 ];
 let failed = 0;
 for (const [name, ok] of checks) { console.log(`${ok?"✓":"✗"} ${name}`); if(!ok) failed++; }

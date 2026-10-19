@@ -24,8 +24,8 @@ Completed in v1.0.0. Adds the Site / Nav / SEO workspace, typed page/anchor/exte
 ## Phase 8 — Discoverability, security & recovery center ✅
 Completed in v1.3.0. Includes the unified SEO/AEO/GEO/security quality center, 90+ score guidance, robots.txt and optional llms.txt managers, JSON-LD, sitemap freshness, security headers, RFC 9116 security.txt, clean BrowserRouter hosting presets, real React/Vite source generation, ZIP/GitHub publishing, and device-local project recovery. Nila Webs now keeps bounded pre-overwrite snapshots, supports manual recovery points, restore/delete/clear workflows, and portable `.nila.json` project backups.
 
-## Phase 9 — Production export pipeline
-Dependency resolver, shadcn-compatible generated structure, Tailwind 4 export option, build validation, deployment presets and export diagnostics.
+## Phase 9 — Production export pipeline ✅
+Completed in v1.4.0. Production exports now enforce a three-layer Nila Webs provenance policy: a responsive visible watermark, generated-source watermark headers, and generator/build metadata. ZIP and direct GitHub publishing use the same preflighted file map. Exports include SHA-256 tamper-evident provenance, dependency pruning, Standard CSS or Tailwind CSS 4 via the official Vite plugin, Cloudflare/Netlify/Vercel deployment presets, and production export diagnostics before packaging or publishing.
 
 ## Phase 10 — Windows release and hardening
 Installer, code signing preparation, updater strategy, performance profiling, crash recovery, security review, final QA and public release automation.

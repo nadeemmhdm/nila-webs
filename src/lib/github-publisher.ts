@@ -1,5 +1,5 @@
 import type { BuilderProject } from "../types";
-import { buildReactViteFiles, type ReactViteFile } from "./exporter";
+import { buildReactViteFiles, type ExportCssMode, type ReactViteFile } from "./exporter";
 
 export interface GitHubPublishOptions {
   token: string;
@@ -9,6 +9,7 @@ export interface GitHubPublishOptions {
   commitMessage?: string;
   createIfMissing?: boolean;
   privateRepo?: boolean;
+  cssMode?: ExportCssMode;
 }
 
 export interface GitHubPublishResult {
@@ -76,8 +77,8 @@ export async function publishReactViteToGitHub(project: BuilderProject, options:
   const branch = (options.branch || "main").trim() || "main";
   if (!token || !owner || !repo) throw new Error("GitHub token, owner and repository name are required.");
 
-  onProgress("Generating React + Vite source files…");
-  const files = await buildReactViteFiles(project);
+  onProgress("Generating watermarked React + Vite source files with provenance preflight…");
+  const files = await buildReactViteFiles(project, { cssMode: options.cssMode || "css" });
   const entries = [...files.entries()];
 
   let repository: any;

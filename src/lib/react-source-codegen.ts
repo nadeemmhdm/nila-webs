@@ -1,6 +1,13 @@
 import type { BuilderNode, BuilderPage, BuilderProject, ExportDependencyManifest, ImportedBlock, SavedComponent } from "../types";
 
 const json = (value: unknown) => JSON.stringify(value, null, 2);
+
+export interface GeneratedBuildMetadata {
+  builderVersion: string;
+  buildId: string;
+  projectId: string;
+  generatedAt: string;
+}
 const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "page";
 const pascal = (value: string) => {
   const out = value.replace(/[^a-zA-Z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean).map(part => part.charAt(0).toUpperCase()+part.slice(1)).join("");
@@ -123,11 +130,18 @@ export const savedThemes = ${json(project.savedThemes || [])} as const;
 `;
 }
 
-function siteConfigSource(project: BuilderProject) {
+function siteConfigSource(project: BuilderProject, build: GeneratedBuildMetadata) {
   return `import { theme, designSystem, motionSystem } from './theme/siteTheme';
 export const siteConfig = ${json({ name: project.name, description: project.description || "", seo: project.seo, security: project.security })} as const;
-export const runtimeConfig = { ...siteConfig, theme, designSystem, motionSystem } as const;
+export const generatedBy = ${json(build)} as const;
+export const runtimeConfig = { ...siteConfig, theme, designSystem, motionSystem, generatedBy } as const;
 export default runtimeConfig;
+`;
+}
+
+function watermarkSource(build: GeneratedBuildMetadata) {
+  return `export const nilaWebsBuild = ${json(build)} as const;
+export default function NilaWatermark(){return <a className="nila-webs-watermark" href="https://github.com/nadeemmhdm/nila-webs" target="_blank" rel="noreferrer" aria-label="Built with Nila Webs" data-nila-build={nilaWebsBuild.buildId}><span>Built with</span><strong>Nila Webs</strong></a>}
 `;
 }
 
@@ -186,19 +200,22 @@ function appSource(project: BuilderProject) {
   return `import { Navigate, Route, Routes } from 'react-router-dom';
 import { runtimeConfig as site } from './site.config';
 import { designVars, themeVars, useViewport } from './runtime/NodeView';
+import NilaWatermark from './components/global/NilaWatermark';
 ${pageImports}
-export default function App(){const viewport=useViewport();return <div className='nw-site' data-nw-motion={site.motionSystem?.reducedMotion||'respect'} style={{...themeVars(site.theme),...designVars(site.designSystem,viewport)}}><Routes>${routes}<Route path='*' element={<Navigate to=${tsString(first)} replace/>}/></Routes></div>}
+export default function App(){const viewport=useViewport();return <div className='nw-site' data-nw-motion={site.motionSystem?.reducedMotion||'respect'} style={{...themeVars(site.theme),...designVars(site.designSystem,viewport)}}><Routes>${routes}<Route path='*' element={<Navigate to=${tsString(first)} replace/>}/></Routes><NilaWatermark/></div>}
 `;
 }
 
-export function buildReactSourceTextFiles(project: BuilderProject, manifest: ExportDependencyManifest): Record<string,string> {
+export function buildReactSourceTextFiles(project: BuilderProject, manifest: ExportDependencyManifest, buildMeta?: Partial<GeneratedBuildMetadata>): Record<string,string> {
+  const build: GeneratedBuildMetadata = { builderVersion: buildMeta?.builderVersion || 'unknown', buildId: buildMeta?.buildId || 'development', projectId: buildMeta?.projectId || project.id, generatedAt: buildMeta?.generatedAt || project.updatedAt || new Date(0).toISOString() };
   const files: Record<string,string> = {};
   files['src/runtime/NodeView.tsx'] = generatedRuntimeSource();
   files['src/runtime/PageSeo.tsx'] = pageSeoSource();
   files['src/theme/siteTheme.ts'] = themeSource(project);
-  files['src/site.config.ts'] = siteConfigSource(project);
+  files['src/site.config.ts'] = siteConfigSource(project, build);
   files['src/components/global/SiteNavbar.tsx'] = globalComponentSource('SiteNavbar', project.globalNavbar);
   files['src/components/global/SiteFooter.tsx'] = globalComponentSource('SiteFooter', project.globalFooter);
+  files['src/components/global/NilaWatermark.tsx'] = watermarkSource(build);
 
   const usedComponentIds = new Set(manifest.usedComponentIds || []);
   for (const component of project.components || []) {

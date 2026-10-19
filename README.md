@@ -135,3 +135,7 @@ Finished projects can be downloaded as a ZIP or published directly to an existin
 
 ## Phase 8 — Discoverability & Security Center
 SEO/AEO/GEO scoring, editable robots.txt and llms.txt, JSON-LD entity metadata, security headers, RFC 9116 security.txt, clean URL export presets and publish-readiness audits.
+
+### Production export provenance (Phase 9)
+
+Every generated website includes a responsive **Built with Nila Webs** watermark, generated-source provenance headers, generator/build metadata, and a SHA-256 `nila.provenance.json` manifest. ZIP export and direct GitHub publishing use the same preflighted React/Vite file map. Export profile can be Standard CSS or Tailwind CSS 4.
