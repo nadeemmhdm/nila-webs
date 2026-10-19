@@ -2,7 +2,7 @@
 
 **Nila Webs** is a Windows-first drag-and-drop website builder that combines a MIT App Inventor-style visual workflow with real React + Vite output. Build multi-page websites from elements and reusable sections, preview interactions live, customize responsive styles, then export a standalone source project that can be hosted anywhere.
 
-## Current build — v0.7.0 (Phase 4 started; Phase 3 complete)
+## Current build — v0.7.0 (Phase 4 complete)
 
 - Tauri 2 Windows desktop shell with React 19 + Vite + TypeScript editor.
 - Splash screen followed by a dedicated **Projects** dashboard.
@@ -42,6 +42,11 @@
 - Project theme system with preset palettes, typography, radius/shadow tokens, live CSS variables and current-page restyling.
 - Prompt/code files can be loaded from `.txt`, `.md`, `.tsx`, `.ts`, `.jsx` or `.js`, added to canvas, or saved into the project block library.
 - Theme tokens are preserved in standalone React/Vite exports.
+- Family-aware adapters cover the supplied pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, auth, timeline, cookie, animation, dock, autocomplete and avatar families.
+- Sections/Components/Templates registry includes visual thumbnails, source/group filters, persistent favorites and motion badges.
+- Imported prompt/code blocks retain source, revision and hash metadata and can be edited, updated and re-converted safely.
+- Five multi-page full-site templates can create complete projects directly from the project creation flow.
+- Export is dependency-aware and prunes unused project assets/components while writing `nila.dependencies.json` provenance metadata.
 
 ## Included visual elements
 
@@ -49,7 +54,7 @@ Heading, text, text link, badge, ordered/unordered list, button, social links, b
 
 ## Included section families
 
-Hero, pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, authentication, timelines, cookie consent, navbar and footer. More supplied blocks will be added through the same registry.
+Hero, pricing, portfolio, feature, about, team, testimonial, services, CTA, contact, FAQ, blog, newsletter, logo cloud, gallery, bento, authentication, timelines, cookie consent, navbar and footer. More supplied blocks can be added through the same typed registry.
 
 ## Run the editor
 
@@ -92,7 +97,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The editor stores websites a
 
 ## 10-phase roadmap
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phase 1 and Phase 3 are complete. Phase 2 already delivered the project workspace, startup flow and production asset pipeline; later phases continue the full block/template, design-system and deployment roadmap.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md). Phases 1, 3 and 4 are complete. Phase 2 already delivered the project workspace, startup flow and production asset pipeline; later phases continue the responsive design-system, interaction, SEO, native-storage, export and Windows-release roadmap.
 
 ## Contributing and security
 
