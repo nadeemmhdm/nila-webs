@@ -10,6 +10,7 @@ on:
       - 'package-lock.json'
       - 'vite.config.ts'
       - 'scripts/verify-phase10.mjs'
+      - '.github/workflows/web-build.yml'
       - '.github/workflows/windows-release.yml'
   workflow_dispatch:
 
