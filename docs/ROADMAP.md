@@ -27,5 +27,5 @@ Completed in v1.3.0. Includes the unified SEO/AEO/GEO/security quality center, 9
 ## Phase 9 — Production export pipeline ✅
 Completed in v1.4.0. Production exports now enforce a three-layer Nila Webs provenance policy: a responsive visible watermark, generated-source watermark headers, and generator/build metadata. ZIP and direct GitHub publishing use the same preflighted file map. Exports include SHA-256 tamper-evident provenance, dependency pruning, Standard CSS or Tailwind CSS 4 via the official Vite plugin, Cloudflare/Netlify/Vercel deployment presets, and production export diagnostics before packaging or publishing.
 
-## Phase 10 — Windows release and hardening
-Installer, code signing preparation, updater strategy, performance profiling, crash recovery, security review, final QA and public release automation.
+## Phase 10 — Windows release and hardening ✅
+Completed in v1.5.0. Nila Webs now ships through a Windows-native Tauri 2 release pipeline with both NSIS `.exe` and WiX `.msi` installers, downgrade protection, WebView2 bootstrap handling, SHA-256 installer checksums, Windows build verification and downloadable CI artifacts. The release configuration keeps the least-privilege desktop capability and hardened CSP from earlier phases, synchronizes app versions across Node/Tauri/Rust manifests, and adds a permanent Phase 10 CI gate for release readiness.
