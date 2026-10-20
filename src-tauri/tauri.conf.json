@@ -33,7 +33,7 @@
     "category": "DeveloperTool",
     "shortDescription": "Drag-and-drop React and Vite website builder for Windows.",
     "longDescription": "Nila Webs is a Windows-first visual website builder that creates production-ready React and Vite websites with responsive design, animations, themes, SEO tooling and deployment-ready source export.",
-    "icon": [],
+    "icon": ["icons/icon.ico"],
     "windows": {
       "allowDowngrades": false,
       "digestAlgorithm": "sha256",
