@@ -25,7 +25,7 @@ const checks=[
  ['Windows CI runner',workflow.includes('runs-on: windows-latest')],
  ['installer artifact upload',workflow.includes('*.exe')&&workflow.includes('*.msi')&&workflow.includes('actions/upload-artifact@v4')],
  ['optional signing preparation',workflow.includes('WINDOWS_CERTIFICATE_BASE64')&&workflow.includes('signtool')],
- ['tag release automation',workflow.includes('gh release')&&workflow.includes("refs/tags/")),
+ ['tag release automation',workflow.includes('gh release')&&workflow.includes("refs/tags/")],
  ['Phase 10 roadmap complete',roadmap.includes('Phase 10 — Windows release and hardening ✅')&&roadmap.includes('v1.5.0')]
 ];
 let failed=0; for(const [name,ok] of checks){console.log(`${ok?'✓':'✗'} ${name}`);if(!ok)failed++;}
