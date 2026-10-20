@@ -23,7 +23,7 @@ const checks=[
  ['release profile hardening',cargo.includes('lto = "thin"')&&cargo.includes('codegen-units = 1')&&cargo.includes('panic = "abort"')],
  ['recovery retained',recovery.includes('recovery')||recovery.includes('snapshot')],
  ['Windows CI runner',workflow.includes('runs-on: windows-latest')],
- ['installer artifact upload',workflow.includes('*.exe')&&workflow.includes('*.msi')&&workflow.includes('actions/upload-artifact@v4')],
+ ['installer artifact upload',workflow.includes("'.exe'")&&workflow.includes("'.msi'")&&workflow.includes('actions/upload-artifact@v4')&&workflow.includes('release/windows/*')],
  ['optional signing preparation',workflow.includes('WINDOWS_CERTIFICATE_BASE64')&&workflow.includes('signtool')],
  ['tag release automation',workflow.includes('gh release')&&workflow.includes("refs/tags/")],
  ['Phase 10 roadmap complete',roadmap.includes('Phase 10 — Windows release and hardening ✅')&&roadmap.includes('v1.5.0')]
