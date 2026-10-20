@@ -1,0 +1,72 @@
+name: Windows Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'scripts/verify-phase10.mjs'
+      - '.github/workflows/windows-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Verify Phase 10 release configuration
+        run: npm run verify:phase10
+
+      - name: Build web editor
+        run: npm run build
+
+      - name: Build Windows NSIS and MSI installers
+        run: npm run tauri:build:windows
+
+      - name: Validate and stage installers
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nsis = Get-ChildItem -Path 'src-tauri/target/release/bundle/nsis' -Filter '*.exe' -File -ErrorAction SilentlyContinue
+          $msi = Get-ChildItem -Path 'src-tauri/target/release/bundle/msi' -Filter '*.msi' -File -ErrorAction SilentlyContinue
+          if (-not $nsis) { throw 'No NSIS .exe installer found' }
+          if (-not $msi) { throw 'No MSI installer found' }
+          New-Item -ItemType Directory -Force -Path 'artifacts' | Out-Null
+          $nsis | Copy-Item -Destination 'artifacts'
+          $msi | Copy-Item -Destination 'artifacts'
+          $hashLines = @()
+          Get-ChildItem 'artifacts' -File | ForEach-Object {
+            $h = Get-FileHash $_.FullName -Algorithm SHA256
+            $hashLines += "$($h.Hash.ToLower())  $($_.Name)"
+          }
+          $hashLines | Set-Content -Path 'artifacts/SHA256SUMS.txt' -Encoding utf8
+          Get-ChildItem 'artifacts' | Format-Table Name, Length
+          Get-Content 'artifacts/SHA256SUMS.txt'
+
+      - name: Upload Windows installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: nila-webs-windows-installers
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 30
