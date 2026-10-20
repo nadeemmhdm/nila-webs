@@ -1,7 +1,7 @@
 {
   "name": "nila-webs",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Windows-first drag-and-drop React + Vite website builder",
   "type": "module",
   "scripts": {
@@ -11,6 +11,7 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "tauri:build:windows": "tauri build --bundles nsis,msi",
     "verify:phase3": "node scripts/verify-phase3.mjs",
     "verify:phase4": "node scripts/verify-phase4.mjs",
     "check:phase3": "node scripts/phase3-regression.mjs",
@@ -20,7 +21,8 @@
     "verify:phase7": "node scripts/verify-phase7.mjs",
     "verify:phase8": "node scripts/verify-phase8.mjs",
     "verify:react-export": "node scripts/verify-react-export.mjs",
-    "verify:phase9": "node scripts/verify-phase9.mjs"
+    "verify:phase9": "node scripts/verify-phase9.mjs",
+    "verify:phase10": "node scripts/verify-phase10.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
